@@ -7,8 +7,7 @@
 (axiom →-intro α (β true) ([α → β] true))
 (axiom mp α [α → β] β)
 
-(axiom ∧-intro α β [α ∧ β])
-(axiom ∧-elim (α true) (β true) ([α ∧ β] true))
+(axiom ∧-intro (α true) (β true) ([α ∧ β] true))
 
 ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/3a6c22831067960643c6988d6c9889bfe14bed76
 (theorem wikimedia-example
@@ -18,7 +17,7 @@
     (truth-elim (u ()) ())
     (→-intro
       (truth-elim (w ()) (α β))
-      (∧-elim (u ()) (w ()) ())
+      (∧-intro (u ()) (w ()) ())
       (α β
        β [α ∧ β]))
     (β [β → α ∧ β])))
