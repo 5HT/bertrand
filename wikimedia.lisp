@@ -7,6 +7,7 @@
 (axiom →-intro α (β true) ([α → β] true))
 (axiom mp α [α → β] β)
 
+(axiom ∧-formation α β [α ∧ β])
 (axiom ∧-intro (α true) (β true) ([α ∧ β] true))
 
 ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/3a6c22831067960643c6988d6c9889bfe14bed76
