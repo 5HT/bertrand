@@ -5,7 +5,7 @@
 (axiom truth-elim (α true) α)
 
 (axiom →-intro α (β true) ((α → β) true))
-(axiom mp α (α → β) β)
+(axiom mp (α true) ((α → β) true) (β true))
 
 (axiom ∧-formation α β (α ∧ β))
 (axiom ∧-intro (α true) (β true) ((α ∧ β) true))
