@@ -4,13 +4,13 @@
 
 (axiom truth-elim (α true) α)
 
-(axiom →-intro α (β true) ([α → β] true))
-(axiom mp α [α → β] β)
+(axiom →-intro α (β true) ((α → β) true))
+(axiom mp α (α → β) β)
 
-(axiom ∧-formation α β [α ∧ β])
-(axiom ∧-intro (α true) (β true) ([α ∧ β] true))
-(axiom ∧-elim-left  ([α ∧ β] true) (α true))
-(axiom ∧-elim-right ([α ∧ β] true) (β true))
+(axiom ∧-formation α β (α ∧ β))
+(axiom ∧-intro (α true) (β true) ((α ∧ β) true))
+(axiom ∧-elim-left  ((α ∧ β) true) (α true))
+(axiom ∧-elim-right ((α ∧ β) true) (β true))
 
 ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/3a6c22831067960643c6988d6c9889bfe14bed76
 (theorem wikimedia-example
@@ -26,8 +26,9 @@
     (β [β → α ∧ β])))
 
 ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
-(theorem ∧-rev x ([α ∧ β] true) ([β ∧ α] true)
+(theorem ∧-rev
+  α,β ((α ∧ β) true) ((β ∧ α) true)
   (∧-intro
-    (∧-elim-right (x ()) ())
-    (∧-elim-left  (x ()) ())
+    (∧-elim-right (α,β ()) ())
+    (∧-elim-left  (α,β ()) ())
     (α β β α)))

@@ -12,7 +12,7 @@ def symbol(expr):
 
 def operator(out, stack):
     f, y, x = Lit(stack.pop()), out.pop(), out.pop()
-    out.append(App(f, [x, y]))
+    out.append(App(x, [f, y]))
 
 def shuntingyard(curr, exprs):
     out, stack = [], []
@@ -48,5 +48,7 @@ def term(curr, expr):
             return Lit(string)
     elif isinstance(expr, Bracket):
         return shuntingyard(curr, expr.value())
+    elif isinstance(expr, int):
+        return Lit(str(expr))
     else:
         raise SyntaxError("cannot determine what “%s” means" % expr)
