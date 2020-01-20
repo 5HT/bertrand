@@ -29,26 +29,15 @@ def dictsubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
         τ = subst(name + salt, Var(name), τ)
     return τ
 
-def prune(s : Dict[Name, Term], τ : Term) -> Term:
-    if isinstance(τ, Var):
-        return s.get(τ.name, τ)
-    elif isinstance(τ, App):
-        return App(prune(s, τ.edge),
-                   maplist(partial(prune, s), τ.children))
-    else:
-        return τ
-
-def unify(s : Dict[Name, Term], α : Term, β : Term):
-    φ, ψ = prune(s, α), prune(s, β)
-    if isinstance(φ, Var) and isinstance(ψ, Var):
-        s[φ.name] = ψ
-    elif isinstance(φ, Lit) and isinstance(ψ, Lit):
+def unify(φ : Term, ψ : Term):
+    if (isinstance(φ, Var) and isinstance(ψ, Var)) or \
+       (isinstance(φ, Lit) and isinstance(ψ, Lit)):
         if φ.name != ψ.name:
             raise UnificationError(φ, ψ)
     elif isinstance(φ, App) and isinstance(ψ, App):
-        unify(s, φ.edge, ψ.edge)
+        unify(φ.edge, ψ.edge)
         for δφ, δψ in zip(φ.children, ψ.children):
-            unify(s, δφ, δψ)
+            unify(δφ, δψ)
     else:
         raise UnificationError(φ, ψ)
 
@@ -62,13 +51,13 @@ def infer(ctx : Dict[Name, Binding], tree : Tree) -> Term:
     statement = lookup(ctx, tree.edge)
     assert len(tree.children) == len(statement.hypotheses), \
            "invalid statement application"
-    substitutions = {}
+
     for expected, subtree in zip(statement.hypotheses, tree.children):
         τ = infer(ctx, subtree)
-        unify(substitutions, dictsubst(tree.substitutions, expected), τ)
+        unify(dictsubst(tree.substitutions, expected), τ)
 
     return dictsubst(tree.substitutions, statement.thesis)
 
 def check(ctx : Dict[Name, Binding], τ : Term, tree : Tree):
     π = infer(ctx, tree)
-    unify({}, π, τ)
+    unify(π, τ)
