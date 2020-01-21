@@ -4,16 +4,19 @@ from sys import argv
 import sexpdata
 from sexpdata import Symbol, Bracket
 
-from prover.datatypes import Tree, Binding, State
+from prover.datatypes import ProofTree, InferenceRule, State
 from prover.prelude import *
 from prover.errors import *
 from prover.checker import check
 from prover.parser import symbol, term
 
 def axiom(curr, expr):
-    name, *hypotheses, thesis = expr
-    curr.context[symbol(name)] = Binding(maplist(partial(term, curr), hypotheses),
-                                         term(curr, thesis))
+    ident, *premises, conclusion = expr
+    name = symbol(ident)
+
+    curr.context[name] = InferenceRule(maplist(partial(term, curr), premises),
+                                       term(curr, conclusion))
+    print("“%s” created" % name)
 
 def keyvalue(curr, pair):
     ident, τ = pair
@@ -25,25 +28,25 @@ def genenv(curr, lst):
 
 def tree(curr, expr):
     ident, *rest, ptable = expr
-    return Tree(symbol(ident),
-                maplist(partial(tree, curr), rest),
-                dict(genenv(curr, ptable)))
+    return ProofTree(symbol(ident),
+                     maplist(partial(tree, curr), rest),
+                     dict(genenv(curr, ptable)))
 
 def theorem(curr, expr):
     ident, *xs, x, body = expr
     name = symbol(ident)
-    hypotheses = maplist(second, genenv(curr, xs))
-    thesis = term(curr, x)
+    premises = maplist(second, genenv(curr, xs))
+    conclusion = term(curr, x)
     proof = tree(curr, body)
 
     τctx = curr.context.copy()
     for idx, value in genenv(curr, xs):
-        τctx[idx] = Binding([], value)
+        τctx[idx] = InferenceRule([], value)
 
     try:
-        check(τctx, thesis, proof)
+        check(τctx, conclusion, proof)
         print("“%s” checked" % name)
-        curr.context[name] = Binding(hypotheses, thesis)
+        curr.context[name] = InferenceRule(premises, conclusion)
     except VerificationError as ex:
         print("“%s” has not been checked" % name)
         print("Error: %s" % ex.message)

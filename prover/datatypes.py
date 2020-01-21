@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 from dataclasses import dataclass
 from sexpdata import Symbol
 
@@ -15,8 +16,7 @@ class Var(Term):
     name : Name
 
 @dataclass
-class App(Term):
-    edge     : Term
+class Symtree(Term):
     children : List[Term]
 
 def sexpr(τ):
@@ -24,21 +24,20 @@ def sexpr(τ):
         return τ.name
     elif isinstance(τ, Var):
         return τ.name
-    elif isinstance(τ, App):
-        return "(%s %s)" % (sexpr(τ.edge),
-                            " ".join(map(sexpr, τ.children)))
+    elif isinstance(τ, Symtree):
+        return "(%s)" % " ".join(map(sexpr, τ.children))
 Term.__str__ = sexpr
 
 @dataclass
-class Tree:
+class ProofTree:
     edge          : Name
-    children      : List[Tree]
+    children      : List[ProofTree]
     substitutions : Dict[Name, Term]
 
 @dataclass
-class Binding:
-    hypotheses : List[Term]
-    thesis     : Term
+class InferenceRule:
+    premises   : List[Term]
+    conclusion : Term
 
 @dataclass
 class State:

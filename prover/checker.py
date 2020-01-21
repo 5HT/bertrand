@@ -1,4 +1,4 @@
-from prover.datatypes import Name, Term, Lit, Var, App, Tree, Binding
+from prover.datatypes import Name, Term, Lit, Var, Symtree, ProofTree, InferenceRule
 from prover.prelude import *
 from prover.errors import *
 
@@ -13,9 +13,8 @@ def subst(name : Name, μ : Term, τ : Term) -> Term:
             return μ
         else:
             return τ
-    elif isinstance(τ, App):
-        return App(subst(name, μ, τ.edge),
-                   maplist(partial(subst, name, μ), τ.children))
+    elif isinstance(τ, Symtree):
+        return Symtree(maplist(partial(subst, name, μ), τ.children))
 
 def dictsubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
     salt = gensym()
@@ -34,30 +33,29 @@ def unify(φ : Term, ψ : Term):
        (isinstance(φ, Lit) and isinstance(ψ, Lit)):
         if φ.name != ψ.name:
             raise UnificationError(φ, ψ)
-    elif isinstance(φ, App) and isinstance(ψ, App):
-        unify(φ.edge, ψ.edge)
+    elif isinstance(φ, Symtree) and isinstance(ψ, Symtree):
         for δφ, δψ in zip(φ.children, ψ.children):
             unify(δφ, δψ)
     else:
         raise UnificationError(φ, ψ)
 
-def lookup(ctx : Dict[Name, Binding], name : Name) -> Term:
+def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
     if name in ctx:
         return ctx[name]
     else:
         raise NotDefinedError(name)
 
-def infer(ctx : Dict[Name, Binding], tree : Tree) -> Term:
+def infer(ctx : Dict[Name, InferenceRule], tree : ProofTree) -> Term:
     statement = lookup(ctx, tree.edge)
-    assert len(tree.children) == len(statement.hypotheses), \
+    assert len(tree.children) == len(statement.premises), \
            "invalid statement application"
 
-    for expected, subtree in zip(statement.hypotheses, tree.children):
+    for expected, subtree in zip(statement.premises, tree.children):
         τ = infer(ctx, subtree)
         unify(dictsubst(tree.substitutions, expected), τ)
 
-    return dictsubst(tree.substitutions, statement.thesis)
+    return dictsubst(tree.substitutions, statement.conclusion)
 
-def check(ctx : Dict[Name, Binding], τ : Term, tree : Tree):
+def check(ctx : Dict[Name, InferenceRule], τ : Term, tree : ProofTree):
     π = infer(ctx, tree)
     unify(π, τ)

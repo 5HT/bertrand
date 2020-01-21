@@ -3,7 +3,7 @@ from sexpdata import Symbol, Bracket
 from functools import partial
 
 from prover.prelude import *
-from prover.datatypes import Lit, Var, App, Tree, Binding, State
+from prover.datatypes import Lit, Var, Symtree
 
 def symbol(expr):
     if not isinstance(expr, Symbol):
@@ -12,7 +12,7 @@ def symbol(expr):
 
 def operator(out, stack):
     f, y, x = Lit(stack.pop()), out.pop(), out.pop()
-    out.append(App(x, [f, y]))
+    out.append(Symtree([x, f, y]))
 
 def shuntingyard(curr, exprs):
     out, stack = [], []
@@ -37,9 +37,7 @@ def shuntingyard(curr, exprs):
 
 def term(curr, expr):
     if isinstance(expr, list):
-        head, *tail = expr
-        return App(term(curr, head),
-                   maplist(partial(term, curr), tail))
+        return Symtree(maplist(partial(term, curr), expr))
     elif isinstance(expr, Symbol):
         string = expr.value()
         if string in curr.variables:
