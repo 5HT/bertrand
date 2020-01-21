@@ -3,7 +3,7 @@ from sexpdata import Symbol, Bracket
 from functools import partial
 
 from prover.prelude import *
-from prover.datatypes import Lit, Var, Symtree
+from prover.datatypes import *
 
 def symbol(expr):
     if not isinstance(expr, Symbol):

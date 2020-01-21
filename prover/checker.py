@@ -1,4 +1,4 @@
-from prover.datatypes import Name, Term, Lit, Var, Symtree, ProofTree, InferenceRule
+from prover.datatypes import *
 from prover.prelude import *
 from prover.errors import *
 
@@ -45,17 +45,28 @@ def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
     else:
         raise NotDefinedError(name)
 
-def infer(ctx : Dict[Name, InferenceRule], tree : ProofTree) -> Term:
+def sorry(tree : Sorry, τ : Term):
+    print("%s: expected “%s”" % (tree.name, τ))
+
+def infer(ctx : Dict[Name, InferenceRule], tree : Derivation) -> Term:
     statement = lookup(ctx, tree.edge)
     assert len(tree.children) == len(statement.premises), \
            "invalid statement application"
 
-    for expected, subtree in zip(statement.premises, tree.children):
-        τ = infer(ctx, subtree)
-        unify(dictsubst(tree.substitutions, expected), τ)
+    for premise, child in zip(statement.premises, tree.children):
+        expected = dictsubst(tree.substitutions, premise)
+        if isinstance(child, Sorry):
+            sorry(child, expected)
+        elif isinstance(child, Proof):
+            τ = infer(ctx, child)
+            unify(expected, τ)
 
     return dictsubst(tree.substitutions, statement.conclusion)
 
-def check(ctx : Dict[Name, InferenceRule], τ : Term, tree : ProofTree):
-    π = infer(ctx, tree)
-    unify(π, τ)
+def check(ctx : Dict[Name, InferenceRule], τ : Term, tree : Derivation):
+    # top-level sorry
+    if isinstance(tree, Sorry):
+        sorry(tree, τ)
+    else:
+        π = infer(ctx, tree)
+        unify(π, τ)

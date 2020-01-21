@@ -4,7 +4,7 @@ from sys import argv
 import sexpdata
 from sexpdata import Symbol, Bracket
 
-from prover.datatypes import ProofTree, InferenceRule, State
+from prover.datatypes import *
 from prover.prelude import *
 from prover.errors import *
 from prover.checker import check
@@ -27,10 +27,15 @@ def genenv(curr, lst):
                evensplit(lst))
 
 def tree(curr, expr):
-    ident, *rest, ptable = expr
-    return ProofTree(symbol(ident),
-                     maplist(partial(tree, curr), rest),
-                     dict(genenv(curr, ptable)))
+    ident, *judgments, rest = expr
+    name = symbol(ident)
+
+    if name == "sorry":
+        return Sorry(symbol(rest))
+    else:
+        return Proof(name,
+                     maplist(partial(tree, curr), judgments),
+                     dict(genenv(curr, rest)))
 
 def theorem(curr, expr):
     ident, *xs, x, body = expr

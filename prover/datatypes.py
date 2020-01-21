@@ -1,7 +1,13 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Dict
 from dataclasses import dataclass
 from sexpdata import Symbol
+
+__all__ = [
+    "Name", "Term", "Lit", "Var", "Symtree",
+    "Derivation", "Sorry", "Proof",
+    "InferenceRule", "State"
+]
 
 Name = str
 
@@ -28,11 +34,17 @@ def sexpr(τ):
         return "(%s)" % " ".join(map(sexpr, τ.children))
 Term.__str__ = sexpr
 
+class Derivation: pass
+
 @dataclass
-class ProofTree:
+class Proof(Derivation):
     edge          : Name
-    children      : List[ProofTree]
+    children      : List[Derivation]
     substitutions : Dict[Name, Term]
+
+@dataclass
+class Sorry(Derivation):
+    name : str
 
 @dataclass
 class InferenceRule:
@@ -43,4 +55,4 @@ class InferenceRule:
 class State:
     variables : List[Name]
     infix     : Dict[Symbol, int]
-    context   : Dict[Name, Binding]
+    context   : Dict[Name, State]
