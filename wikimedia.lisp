@@ -17,10 +17,10 @@
   u (α true) w (β true)
   ([α → β → α ∧ β] true)
   (→-intro
-    (truth-elim (u ()) ())
+    (truth-elim u ())
     (→-intro
-      (truth-elim (w ()) (α β))
-      (∧-intro (u ()) (w ()) ())
+      (truth-elim w (α β))
+      (∧-intro u w ())
       (α β
        β [α ∧ β]))
     (β [β → α ∧ β])))

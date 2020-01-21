@@ -27,15 +27,22 @@ def genenv(curr, lst):
                evensplit(lst))
 
 def tree(curr, expr):
-    ident, *judgments, rest = expr
-    name = symbol(ident)
+    if isinstance(expr, list):
+        ident, *judgments, rest = expr
+        name = symbol(ident)
 
-    if name == "sorry":
-        return Sorry(symbol(rest))
+        if name == "sorry":
+            return Sorry(symbol(rest))
+        else:
+            return Proof(name,
+                         maplist(partial(tree, curr), judgments),
+                         dict(genenv(curr, rest)))
+    elif isinstance(expr, Symbol):
+        return Proof(symbol(expr), [], {})
+    elif isinstance(expr, int):
+        return Proof(str(expr), [], {})
     else:
-        return Proof(name,
-                     maplist(partial(tree, curr), judgments),
-                     dict(genenv(curr, rest)))
+        raise SyntaxError("“%s” is not proof tree" % str(expr))
 
 def theorem(curr, expr):
     ident, *xs, x, body = expr
