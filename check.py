@@ -10,13 +10,28 @@ from prover.errors import *
 from prover.checker import check
 from prover.parser import symbol, term
 
-def axiom(curr, expr):
-    ident, *premises, conclusion = expr
-    name = symbol(ident)
+def containsonly(ch, s):
+    return all(c == ch for c in s)
 
-    curr.context[name] = InferenceRule(maplist(partial(term, curr), premises),
-                                       term(curr, conclusion))
-    print("“%s” created" % name)
+def isseparator(expr):
+    return isinstance(expr, Symbol) and \
+           any(containsonly(ch, expr.value()) for ch in "─-")
+
+def postulate(curr, expr):
+    premises = []
+    while nonempty(expr):
+        elem = expr.pop(0)
+        if isseparator(elem):
+            name = symbol(expr.pop(0))
+            conclusion = term(curr, expr.pop(0))
+            curr.context[name] = InferenceRule(premises.copy(), conclusion)
+
+            premises.clear()
+        else:
+            premises.append(term(curr, elem))
+    
+    if nonempty(premises):
+        raise SyntaxError("incomplete definition")
 
 def keyvalue(curr, pair):
     ident, τ = pair
@@ -44,16 +59,32 @@ def tree(curr, expr):
     else:
         raise SyntaxError("“%s” is not proof tree" % str(expr))
 
-def theorem(curr, expr):
-    ident, *xs, x, body = expr
-    name = symbol(ident)
-    premises = maplist(second, genenv(curr, xs))
-    conclusion = term(curr, x)
-    proof = tree(curr, body)
+def preamble(curr, expr):
+    names, premises = [], []
+    expected = 0
 
+    while True:
+        elem = expr.pop(0)
+        if isseparator(elem):
+            expected += 1
+            names.append(symbol(expr.pop(0)))
+        elif expected != 0:
+            expected -= 1
+            premises.append(term(curr, elem))
+        else:
+            name, conclusion = names.pop(), premises.pop()
+            return name, conclusion, names, premises, tree(curr, elem)
+
+def theorem(curr, expr):
+    if not expr:
+        return
+
+    name, conclusion, names, premises, proof = preamble(curr, expr)
     τctx = curr.context.copy()
-    for idx, value in genenv(curr, xs):
-        τctx[idx] = InferenceRule([], value)
+    τctx.update(
+        (name, InferenceRule([], τ)) \
+        for name, τ in zip(names, premises)
+    )
 
     try:
         check(τctx, conclusion, proof)
@@ -62,6 +93,8 @@ def theorem(curr, expr):
     except VerificationError as ex:
         print("“%s” has not been checked" % name)
         print("Error: %s" % ex.message)
+
+    theorem(curr, expr)
 
 def infix(curr, expr):
     name, prec = expr
@@ -72,7 +105,7 @@ def variables(curr, expr):
     curr.variables.extend(maplist(symbol, expr))
 
 forms = {
-    "axiom": axiom,
+    "postulate": postulate,
     "theorem": theorem,
     "lemma": theorem,
     "infix": infix,

@@ -2,19 +2,41 @@
 
 (variables α β)
 
-(axiom truth-elim (α true) α)
+(postulate
+  (α true)
+  ──────── truth-elim
+     α
 
-(axiom →-intro α (β true) ((α → β) true))
-(axiom mp (α true) ((α → β) true) (β true))
+    α (β true)
+  ────────────── →-intro
+  ((α → β) true)
+  
+  (α true) ((α → β) true)
+  ─────────────────────── mp
+        (β true))
 
-(axiom ∧-formation α β (α ∧ β))
-(axiom ∧-intro (α true) (β true) ((α ∧ β) true))
-(axiom ∧-elim-left  ((α ∧ β) true) (α true))
-(axiom ∧-elim-right ((α ∧ β) true) (β true))
+(postulate
+    α β
+  ─────── ∧-formation
+  (α ∧ β)
+  
+  (α true) (β true)
+  ───────────────── ∧-intro
+   ((α ∧ β) true)
+
+  ((α ∧ β) true)
+  ────────────── ∧-elim-left
+     (α true)
+
+  ((α ∧ β) true)
+  ────────────── ∧-elim-right
+     (β true))
 
 ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/3a6c22831067960643c6988d6c9889bfe14bed76
-(theorem wikimedia-example
-  u (α true) w (β true)
+(theorem
+  ──────── u  ──────── w
+  (α true)    (β true)
+  ────────────────────── wikimedia-example
   ([α → β → α ∧ β] true)
   (→-intro
     (truth-elim u ())
@@ -23,11 +45,13 @@
       (∧-intro u w ())
       (α β
        β [α ∧ β]))
-    (β [β → α ∧ β])))
+    (β [β → α ∧ β]))
 
-;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
-(theorem ∧-rev
-  α,β ((α ∧ β) true) ((β ∧ α) true)
+  ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
+  ────────────── α,β
+  ((α ∧ β) true)
+  ────────────── ∧-rev
+  ((β ∧ α) true)
   (∧-intro
     (∧-elim-right (α,β ()) ())
     (∧-elim-left  (α,β ()) ())

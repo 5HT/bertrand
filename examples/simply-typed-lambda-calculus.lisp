@@ -6,25 +6,34 @@
   ;; variables
   x y z e e₁ e₂)
 
-(axiom ctx-intro
+(postulate
   (Γ ctx) ((x : σ) ∈ Γ)
-  (Γ ⊢ (x : σ)))
+  ───────────────────── ctx-intro
+      (Γ ⊢ (x : σ)))
 
-(axiom λ-intro
+(postulate λ-intro
   (Γ ctx) ((cons (x : σ) Γ) ⊢ (e : τ))
-  (Γ ⊢ ((λ (x : σ) e) : (σ → τ))))
+  ──────────────────────────────────── λ-intro
+  (Γ ⊢ ((λ (x : σ) e) : (σ → τ)))
 
-(axiom λ-elim
-  (Γ ctx)
-  (Γ ⊢ (e₁ : (σ → τ)))
-  (Γ ⊢ (e₂ : σ))
-  (Γ ⊢ ((e₁ e₂) : τ)))
+                (Γ ctx)
+  (Γ ⊢ (e₁ : (σ → τ))) (Γ ⊢ (e₂ : σ))
+  ─────────────────────────────────── λ-elim
+          (Γ ⊢ ((e₁ e₂) : τ)))
 
-(axiom ℕ-ctx-def (ℕ-ctx ctx))
-(axiom 0-def    ((0 : ℕ) ∈ ℕ-ctx))
-(axiom succ-def ((succ : (ℕ → ℕ)) ∈ ℕ-ctx))
+(postulate
+  ─────────── ℕ-ctx-def
+  (ℕ-ctx ctx)
 
-(theorem 1-def (ℕ-ctx ⊢ ((succ 0) : ℕ))
+  ────────────────── 0-def
+  ((0 : ℕ) ∈ ℕ-ctx)
+
+  ─────────────────────────── succ-def
+  ((succ : (ℕ → ℕ)) ∈ ℕ-ctx))
+
+(theorem
+  ───────────────────────── 1-def
+  (ℕ-ctx ⊢ ((succ 0) : ℕ))
   (λ-elim (ℕ-ctx-def ())
           (ctx-intro (ℕ-ctx-def ()) (succ-def ())
                      (Γ ℕ-ctx x succ σ (ℕ → ℕ)))
