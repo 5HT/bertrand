@@ -6,9 +6,12 @@ from prover.prelude import *
 from prover.datatypes import *
 
 def symbol(expr):
-    if not isinstance(expr, Symbol):
-        raise SyntaxError("expected symbol at “%s”" % expr)
-    return expr.value()
+    if isinstance(expr, Symbol):
+        return expr.value()
+    elif isinstance(expr, int):
+        return str(expr)
+
+    raise SyntaxError("expected symbol at “%s”" % expr)
 
 def operator(out, stack):
     f, y, x = Lit(stack.pop()), out.pop(), out.pop()

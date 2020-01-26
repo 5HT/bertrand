@@ -51,7 +51,10 @@ def sorry(tree : Sorry, τ : Term):
 def infer(ctx : Dict[Name, InferenceRule], tree : Derivation) -> Term:
     statement = lookup(ctx, tree.edge)
     assert len(tree.children) == len(statement.premises), \
-           "invalid statement application"
+           "expected %d arguments, but got %d" % (
+               len(statement.premises),
+               len(tree.children)
+           )
 
     for premise, child in zip(statement.premises, tree.children):
         expected = dictsubst(tree.substitutions, premise)
