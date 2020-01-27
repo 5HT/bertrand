@@ -43,7 +43,9 @@ def term(curr, expr):
         return Symtree(maplist(partial(term, curr), expr))
     elif isinstance(expr, Symbol):
         string = expr.value()
-        if string in curr.variables:
+        if string == "_":
+            return Hole()
+        elif string in curr.variables:
             return Var(string)
         else:
             return Lit(string)

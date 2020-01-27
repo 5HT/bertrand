@@ -16,7 +16,7 @@ def subst(name : Name, μ : Term, τ : Term) -> Term:
     elif isinstance(τ, Symtree):
         return Symtree(maplist(partial(subst, name, μ), τ.children))
 
-def dictsubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
+def multisubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
     salt = gensym()
     for name, _ in substitutions.items():
         τ = subst(name, Var(name + salt), τ)
@@ -28,15 +28,49 @@ def dictsubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
         τ = subst(name + salt, Var(name), τ)
     return τ
 
-def unify(φ : Term, ψ : Term):
-    if (isinstance(φ, Var) and isinstance(ψ, Var)) or \
-       (isinstance(φ, Lit) and isinstance(ψ, Lit)):
-        if φ.name != ψ.name:
-            raise UnificationError(φ, ψ)
-    elif isinstance(φ, Symtree) and isinstance(ψ, Symtree):
-        for δφ, δψ in zip(φ.children, ψ.children):
-            unify(δφ, δψ)
+def prune(substs : Dict[Name, Term], τ : Term):
+    if isinstance(τ, Var):
+        if τ.name in substs:
+            return substs[τ.name]
+        else:
+            return τ
     else:
+        return τ
+
+def unify(substs : Dict[Name, Term], α : Term, β : Term) -> bool:
+    φ, ψ = prune(substs, α), prune(substs, β)
+    if isinstance(φ, Var):
+        substs[φ.name] = ψ
+        return True
+    if isinstance(φ, Lit) and isinstance(ψ, Lit):
+        return φ.name == ψ.name
+    elif isinstance(φ, Symtree) and isinstance(ψ, Symtree):
+        if len(φ.children) != len(ψ.children):
+            return False
+        for δφ, δψ in zip(φ.children, ψ.children):
+            if not unify(substs, δφ, δψ):
+                return False
+        return True
+    elif isinstance(φ, Hole):
+        return True
+    else:
+        return False
+
+def occurs(τ : Term, name : Name):
+    if isinstance(τ, Var):
+        return τ.name == name
+    elif isinstance(τ, Lit):
+        return False
+    elif isinstance(τ, Symtree):
+        for σ in τ.children:
+            if occurs(σ, name):
+                return True
+        return False
+    else:
+        return False
+
+def even(φ : Term, ψ : Term):
+    if φ != ψ:
         raise UnificationError(φ, ψ)
 
 def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
@@ -45,10 +79,34 @@ def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
     else:
         raise NotDefinedError(name)
 
+def getbound(bound : List[Term], τ : Term) -> List[Name]:
+    for formula in bound:
+        substs = {}
+        if unify(substs, formula, τ):
+            assert all(map(lambda σ: isinstance(σ, Var), substs.values())), \
+                   "cannot substitute variable binder with term"
+            vars = maplist(lambda σ: σ.name, substs.values())
+            if isinstance(τ, Symtree):
+                for child in τ.children:
+                    vars.extend(getbound(bound, child))
+            return vars
+    return []
+
+def checksubst(bound : List[Term], substitutions : Dict[Name, Term], τ : Term):
+    BV = getbound(bound, τ)
+    for name, σ in substitutions.items():
+        if isinstance(σ, Var) and σ.name in BV:
+            raise VerificationError(
+                "cannot replace “%s” with “%s”, because it is bound" % (
+                    name, σ.name
+                )
+            )
+
 def sorry(tree : Sorry, τ : Term):
     print("%s: expected “%s”" % (tree.name, τ))
 
-def infer(ctx : Dict[Name, InferenceRule], tree : Derivation) -> Term:
+def infer(ctx : Dict[Name, InferenceRule], bound : List[Term],
+          tree : Derivation) -> Term:
     statement = lookup(ctx, tree.edge)
     assert len(tree.children) == len(statement.premises), \
            "expected %d arguments, but got %d" % (
@@ -57,19 +115,22 @@ def infer(ctx : Dict[Name, InferenceRule], tree : Derivation) -> Term:
            )
 
     for premise, child in zip(statement.premises, tree.children):
-        expected = dictsubst(tree.substitutions, premise)
+        checksubst(bound, tree.substitutions, premise)
+        expected = multisubst(tree.substitutions, premise)
         if isinstance(child, Sorry):
             sorry(child, expected)
         elif isinstance(child, Proof):
-            τ = infer(ctx, child)
-            unify(expected, τ)
+            τ = infer(ctx, bound, child)
+            even(expected, τ)
 
-    return dictsubst(tree.substitutions, statement.conclusion)
+    checksubst(bound, tree.substitutions, statement.conclusion)
+    return multisubst(tree.substitutions, statement.conclusion)
 
-def check(ctx : Dict[Name, InferenceRule], τ : Term, tree : Derivation):
+def check(ctx : Dict[Name, InferenceRule], bound : List[Term],
+          τ : Term, tree : Derivation):
     # top-level sorry
     if isinstance(tree, Sorry):
         sorry(tree, τ)
     else:
-        π = infer(ctx, tree)
-        unify(π, τ)
+        π = infer(ctx, bound, tree)
+        even(π, τ)

@@ -3,7 +3,19 @@
 
 (infix → 25)
 
-(variables α β γ x)
+(variables α β γ x a b c)
+
+(bound (∀ x _) (∃ x _))
+
+(postulate
+  ───────────── no-upper-bound
+  (∀ a (∃ b (a > b))))
+
+;; fails
+(lemma
+  ───────────── variable-bound-fail
+  (∀ b (∃ b (b > b)))
+  (no-upper-bound (a b)))
 
 (postulate
   α (α → β)

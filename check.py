@@ -87,7 +87,7 @@ def theorem(curr, expr):
     )
 
     try:
-        check(τctx, conclusion, proof)
+        check(τctx, curr.bound, conclusion, proof)
         print("“%s” checked" % name)
         curr.context[name] = InferenceRule(premises, conclusion)
     except VerificationError as ex:
@@ -104,12 +104,16 @@ def infix(curr, expr):
 def variables(curr, expr):
     curr.variables.extend(maplist(symbol, expr))
 
+def bound(curr, expr):
+    curr.bound.extend(maplist(partial(term, curr), expr))
+
 forms = {
     "postulate": postulate,
     "theorem": theorem,
     "lemma": theorem,
     "infix": infix,
-    "variables": variables
+    "variables": variables,
+    "bound": bound
 }
 def evaluate(curr, expr):
     head, *tail = expr
@@ -124,7 +128,7 @@ def doexprs(curr, string):
         evaluate(curr, expr)
 
 appname, *filenames = argv
-curr = State([], {}, {})
+curr = State()
 for filename in filenames:
     print("Checking %s" % filename)
     with open(filename, 'r', encoding='utf-8') as fin:
