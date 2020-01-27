@@ -6,6 +6,8 @@
   ;; variables
   x y z e e₁ e₂)
 
+(bound (λ (x : _) _))
+
 (postulate
   (Γ ctx) ((x : σ) ∈ Γ)
   ───────────────────── ctx-intro
@@ -88,4 +90,8 @@
                    (Γ (ℕ-ctx ∪ (x : ℕ))
                     e₁ succ e₂ (succ x)
                     σ ℕ τ ℕ))
-           (Γ ℕ-ctx σ ℕ τ ℕ e (succ (succ x)))))
+           (Γ ℕ-ctx σ ℕ τ ℕ e (succ (succ x))))
+
+  ────────────────────────────────────────────────────── fail
+  (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
+  (succ-twice (x succ)))

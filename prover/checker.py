@@ -80,24 +80,34 @@ def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
         raise NotDefinedError(name)
 
 def getbound(bound : List[Term], τ : Term) -> List[Name]:
+    vars = []
+
     for formula in bound:
         substs = {}
         if unify(substs, formula, τ):
-            assert all(map(lambda σ: isinstance(σ, Var), substs.values())), \
-                   "cannot substitute variable binder with term"
+            for name, σ in substs.items():
+                if not isinstance(σ, Var):
+                    raise VerificationError("“%s” expected to be a variable" % σ)
             vars = maplist(lambda σ: σ.name, substs.values())
-            if isinstance(τ, Symtree):
-                for child in τ.children:
-                    vars.extend(getbound(bound, child))
-            return vars
-    return []
+            break
+
+    if isinstance(τ, Symtree):
+        for child in τ.children:
+            vars.extend(getbound(bound, child))
+    return vars
 
 def checksubst(bound : List[Term], substitutions : Dict[Name, Term], τ : Term):
     BV = getbound(bound, τ)
     for name, σ in substitutions.items():
-        if isinstance(σ, Var) and σ.name in BV:
+        if name in BV and not isinstance(σ, Var):
             raise VerificationError(
-                "cannot replace “%s” with “%s”, because it is bound" % (
+                "cannot replace bound variable “{0}” with a constant “{1}”".format(
+                    name, σ
+                )
+            )
+        elif isinstance(σ, Var) and σ.name in BV:
+            raise VerificationError(
+                "cannot replace “{0}” with “{1}”, because “{1}” is bound".format(
                     name, σ.name
                 )
             )

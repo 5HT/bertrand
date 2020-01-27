@@ -37,6 +37,10 @@ def sexpr(τ):
         return τ.name
     elif isinstance(τ, Symtree):
         return "(%s)" % " ".join(map(sexpr, τ.children))
+    elif isinstance(τ, Hole):
+        return "_"
+    else:
+        raise TypeError("this should never happens (naked Term)")
 Term.__str__ = sexpr
 
 class Derivation: pass
