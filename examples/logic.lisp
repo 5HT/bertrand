@@ -1,6 +1,3 @@
-;; TODO:
-;;; definitions
-
 (infix → 25)
 
 (variables α β γ φ x a b c)
