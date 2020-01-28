@@ -8,31 +8,138 @@
 </head>
 <body>
 <header>
-    <a href="https://github.com/groupoid/principia"><h1>⊢</h1></a>
-    <H1>PRINCIPIA</H1>
+  <h1 style="border-left: none;">
+    <a href="https://github.com/groupoid/principia"
+       style="color:black; text-decoration: none;">⊢</a>
+  </h1>
+  <h1>PRINCIPIA</h1>
 </header>
 <main>
-   <article>
-    <h3>TYPES</h3>
-    <h4>Name</h4>
-    <h4>Lit</h4>
-    <h4>Var</h4>
-    <h4>Derivation</h4>
-    <h4>InferenceRule</h4>
-    <h4>Term</h4>
-    <h4>Proof</h4>
-    <h4>Hole</h4>
-    <h4>State</h4>
-    <h4></h4>
-    <h3>SYNTAX</h3>
-    <h4>variables</h4>
-    <h4>infix</h4>
-    <h4>bound</h4>
-    <h4>postulate</h4>
-    <h4>lemma, theorem</h4>
-    <h4></h4>
-    <figure><code>
-    </code></figure>
+  <article>
+    <section>
+      <h3>TYPES</h3>
+      <p>Unlike <a href="http://us.metamath.org/index.html">Metamath</a>
+         and like <a href="https://web.archive.org/web/20131219002242/http://wiki.planetmath.org/cgi-bin/wiki.pl/Bourbaki_proof_checker">Bourbaki</a>
+         terms in PRINCIPIA are represented as S-expressions.<br>
+         They will be converted to an internal AST, which
+         is defined inductively as
+          <figure>
+            <code>Name = &lt;Unicode character (except “(”, “)”, “[”, “]”, “"”, “'”) sequence&gt;
+Term = Lit Name
+     | Var Name
+     | Hole
+     | Symtree (Term list)</code></figure>
+      </p>
+    </section>
+    <aside>
+      <section>
+        <h4>Var</h4>
+        <p>
+          Symbol from variable list will be treated as variable: α, β, γ etc.<br>
+          Variables (unlike literals) can be substituted.
+        </p>
+        <h4>Lit</h4>
+        <p>
+          Any other symbol is literal (constant).<br>
+          For example, literals can represent “∀”, “∃” or “+” symbols.
+        </p>
+      </section>
+      <section>
+        <h4>Symtree</h4>
+        <p>
+          Variables and literals can be grouped into trees.<br>
+          Trees are represented using S-expressions: (a b c …)
+        </p>
+        <h4>Hole</h4>
+        <p>
+          As hole will be treated only underscore “_” symbol.<br>
+          It is used in “bound” command.
+        </p>
+      </section>
+    </aside>
+    <section>
+      <h3>SYNTAX</h3>
+      <p>Not only terms, but the whole syntax uses S-expressions.</p>
+      <h4>variables</h4>
+      <p>
+        <code>(variables α β γ ...)</code> adds “α”, “β”, “γ” etc
+        to the variable list.
+      </p>
+      <h4>infix</h4>
+      <p>
+        <code>(infix ⊗ prec)</code> declares “⊗” as an infix operator
+        with precedence “prec”.<br>
+        Then it can be used in such way:
+        <code>[a ⊗ b ⊗ c ...]</code> will be converted
+        to <code>(a ⊗ (b ⊗ (c ...)))</code>.
+        Multiple infix operators in one form
+        will be resolved according to their precedences.<br>
+        But be careful: by default, trees inside square brackets will <b>not</b>
+        be resolved as infix.<br>
+        So, <code>[a ⊗ (b ⊗ c ⊗ d)]</code>
+        is not <code>(a ⊗ (b ⊗ (c ⊗ d)))</code>, but it is
+        <code>(a ⊗ (b ⊗ c ⊗ d))</code>. Also note that there is
+        distinction between <code>(a ⊗ (b ⊗ c))</code> and <code>(a ⊗ b ⊗ c)</code>.
+      </p>
+      <h4>bound</h4>
+      <p>
+        <code>(bound (Π x _) (Σ y _) ...)</code> declares “Π” and “Σ” as bindings.<br>
+        Generally binding can have another form rather then
+        <code>(φ x _)</code>.<br>
+        It can be, for example, <code>(λ (x : _) _)</code>.<br>
+        Bound variables (they appear in declaration) have special meaning.<br>
+      </p>
+      <p>
+        We cannot do two things with them:
+      </p>
+      <ul style="list-style-type: circle;">
+        <li>
+          Replace the bound variable with Lit or Symtree.
+          This prevents us, for example, from deducing
+          <code>(λ (succ : ℕ) (succ (succ succ)))</code>
+          (this is obviosly meaningless)
+          from <code>(λ (x : ℕ) (succ (succ x)))</code>.
+        </li>
+        <li>
+          Replace the bound variable with another bound variable.
+          This prevents from dedicing wrong things like
+          <code>(∀ b (∃ b (b > b)))</code> from
+          <code>(∀ a (∃ b (a > b)))</code>.
+        </li>
+      </ul>
+      <h4>postulate</h4>
+      <p>
+        (1) is premises.<br>
+        (2) is inference rule name.<br>
+        (3) is conclusion.
+        <figure><code>(postulate
+
+  h₁ h₂ h₃ ...         ;; (1)
+  ──────────── axiom-1 ;; (2)
+       h               ;; (3)
+
+  g₁ g₂ g₃ ...
+  ──────────── axiom-2
+       g
+  ...)
+        </code></figure>
+      </p>
+      <h4>lemma, theorem</h4>
+      <p>
+        (1) is premise names.<br>
+        (2) is premises self.<br>
+        (3) is lemma/theorem name.<br>
+        (4) is conclusion.
+        <figure><code>(theorem
+
+  ─── f₁ ─── f₂ ─── f₃               ;; (1)
+   h₁     h₂     h₃    ...           ;; (2)
+  ──────────────────────── theorem-1 ;; (3)
+              h                      ;; (4)
+  ...)
+                </code></figure>
+      </p>
+    </section>
   </article>
 </main>
 <footer>Principia Mathematica</footer>
