@@ -4,8 +4,8 @@
   ─────── 0-def
   (0 nat)
 
-     (x nat)
-  ───────────── succ-def
+      (x nat)
+  ────────────── succ-def
   ((succ x) nat))
 
 (define 1 (succ 0))

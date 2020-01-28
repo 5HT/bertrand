@@ -10,12 +10,12 @@
 (define (∃ x φ) (¬ (∀ x (¬ φ))))
 
 (postulate
-  ───────────── no-upper-bound
+  ─────────────────── no-upper-bound
   (∀ a (∃ b (a > b))))
 
 ;; fails
 (lemma
-  ───────────── variable-bound-fail
+  ─────────────────── variable-bound-fail
   (∀ b (∃ b (b > b)))
   (no-upper-bound (a b)))
 
