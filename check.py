@@ -7,7 +7,7 @@ from sexpdata import Symbol, Bracket
 from prover.datatypes import *
 from prover.prelude import *
 from prover.errors import *
-from prover.checker import check
+from prover.checker import unify, multisubst, check
 from prover.parser import symbol, term
 
 def containsonly(ch, s):
@@ -17,25 +17,40 @@ def isseparator(expr):
     return isinstance(expr, Symbol) and \
            any(containsonly(ch, expr.value()) for ch in "─-")
 
+def parseterm(curr, expr):
+    return macroexpand(curr, term(curr, expr))
+
+def macroexpand(curr, τ):
+    for pattern, body in curr.defs:
+        substs = {}
+        if unify(substs, pattern, τ):
+            τ = multisubst(substs, body)
+            break
+
+    if isinstance(τ, Symtree):
+        τ = Symtree(maplist(partial(macroexpand, curr), τ.children))
+
+    return τ
+
 def postulate(curr, expr):
     premises = []
     while nonempty(expr):
         elem = expr.pop(0)
         if isseparator(elem):
             name = symbol(expr.pop(0))
-            conclusion = term(curr, expr.pop(0))
+            conclusion = parseterm(curr, expr.pop(0))
             curr.context[name] = InferenceRule(premises.copy(), conclusion)
 
             premises.clear()
         else:
-            premises.append(term(curr, elem))
+            premises.append(parseterm(curr, elem))
     
     if nonempty(premises):
         raise SyntaxError("incomplete definition")
 
 def keyvalue(curr, pair):
     ident, τ = pair
-    return (symbol(ident), term(curr, τ))
+    return (symbol(ident), parseterm(curr, τ))
 
 def genenv(curr, lst):
     return map(partial(keyvalue, curr),
@@ -49,8 +64,7 @@ def tree(curr, expr):
         if name == "sorry":
             return Sorry(symbol(rest))
         else:
-            return Proof(name,
-                         maplist(partial(tree, curr), judgments),
+            return Proof(name, maplist(partial(tree, curr), judgments),
                          dict(genenv(curr, rest)))
     elif isinstance(expr, Symbol):
         return Proof(symbol(expr), [], {})
@@ -70,7 +84,7 @@ def preamble(curr, expr):
             names.append(symbol(expr.pop(0)))
         elif expected != 0:
             expected -= 1
-            premises.append(term(curr, elem))
+            premises.append(parseterm(curr, elem))
         else:
             name, conclusion = names.pop(), premises.pop()
             return name, conclusion, names, premises, tree(curr, elem)
@@ -107,13 +121,20 @@ def variables(curr, expr):
 def bound(curr, expr):
     curr.bound.extend(maplist(partial(term, curr), expr))
 
+def define(curr, expr):
+    pattern, body = expr
+    curr.defs.append(
+        (term(curr, pattern), parseterm(curr, body))
+    )
+
 forms = {
     "postulate": postulate,
     "theorem": theorem,
     "lemma": theorem,
     "infix": infix,
     "variables": variables,
-    "bound": bound
+    "bound": bound,
+    "define": define
 }
 def evaluate(curr, expr):
     head, *tail = expr

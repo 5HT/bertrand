@@ -3,9 +3,11 @@
 
 (infix → 25)
 
-(variables α β γ x a b c)
+(variables α β γ φ x a b c)
 
-(bound (∀ x _) (∃ x _))
+(bound (∀ x _))
+
+(define (∃ x φ) (¬ (∀ x (¬ φ))))
 
 (postulate
   ───────────── no-upper-bound
