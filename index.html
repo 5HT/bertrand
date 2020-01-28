@@ -87,9 +87,9 @@ Term = Lit Name
         Generally binding can have another form rather than
         <code>(φ x _)</code>.<br>
         It can be, for example, <code>(λ (x : _) _)</code>.<br>
-        Bound variables (they appear in declaration) have special meaning.<br>
       </p>
       <p>
+        Bound variables (they appear in declaration) have special meaning.<br>
         We cannot do two things with them:
       </p>
       <ul style="list-style-type: circle;">
@@ -102,7 +102,7 @@ Term = Lit Name
         </li>
         <li>
           Replace the bound variable with another bound variable.
-          This prevents from dedicing wrong things like
+          This prevents from deducing wrong things like
           <code>(∀ b (∃ b (b > b)))</code> from
           <code>(∀ a (∃ b (a > b)))</code>.
         </li>
