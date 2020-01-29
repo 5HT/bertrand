@@ -2,8 +2,9 @@ import sexpdata
 from sexpdata import Symbol, Bracket
 from functools import partial
 
-from prover.prelude import *
+from prover.prelude   import *
 from prover.datatypes import *
+from prover.errors    import *
 
 def symbol(expr):
     if isinstance(expr, Symbol):
@@ -40,7 +41,15 @@ def shuntingyard(curr, exprs):
 
 def term(curr, expr):
     if isinstance(expr, list):
-        return Symtree(maplist(partial(term, curr), expr))
+        if len(expr) == 0:
+            raise ValueError("empty expression")
+
+        if isinstance(first(expr), Symbol) and \
+           first(expr).value() == "#":
+            expr.pop(0)
+            return shuntingyard(curr, expr)
+        else:
+            return Symtree(maplist(partial(term, curr), expr))
     elif isinstance(expr, Symbol):
         string = expr.value()
         if string == "_":
@@ -49,9 +58,7 @@ def term(curr, expr):
             return Var(string)
         else:
             return Lit(string)
-    elif isinstance(expr, Bracket):
-        return shuntingyard(curr, expr.value())
     elif isinstance(expr, int):
         return Lit(str(expr))
     else:
-        raise SyntaxError("cannot determine what “%s” means" % expr)
+        raise InvalidTermError(expr)

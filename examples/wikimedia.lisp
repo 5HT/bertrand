@@ -37,15 +37,15 @@
   ──────── u  ──────── w
   (α true)    (β true)
   ────────────────────── wikimedia-example
-  ([α → β → α ∧ β] true)
+  ((# α → β → α ∧ β) true)
   (→-intro
     (truth-elim u ())
     (→-intro
       (truth-elim w (α β))
       (∧-intro u w ())
       (α β
-       β [α ∧ β]))
-    (β [β → α ∧ β]))
+       β (# α ∧ β)))
+    (β (# β → α ∧ β)))
 
   ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
   ────────────── α,β

@@ -13,7 +13,44 @@
        style="color:black; text-decoration: none;">⊢</a>
   </h1>
   <h1>PRINCIPIA</h1>
-</header>
+</header><aside>
+  <article>
+    <section>
+      <h3>SYNOPSIS</h3>
+      <p>
+        PRINCIPIA is a theorem prover for proving stuff like “1 + 1 = 2”<br>
+        Its (almost) only inference rule is substitution rule:
+        from τ we can deduce τ[α′/α, β′/β, …] where “α′/α” is
+        the substitution “α” by “α′”.<br>
+        It is insipiried by
+        <a href="http://us.metamath.org/downloads/metamath.pdf">Metamath</a>
+        and <a href="http://us.metamath.org/other.html#mmrelated">some Metamath-like systems</a>.
+      </p>
+      <p>Requires Python 3.7+ and <a href="https://github.com/jd-boyd/sexpdata">sexpdata</a>.</p>
+      <figure style="max-width: 100%;">
+        <code>$ pip install sexpdata
+$ git clone https://github.com/groupoid/principia
+$ cd principia
+$ python principia.py examples/logic.lisp</code>
+      </figure>
+    </section>
+    <section>
+      <h3>EXAMPLE</h3>
+      <p>Peano numbers</p>
+      <figure style="max-width: 100%;"><code>(variables x y)
+(postulate
+  ─────── 0-def
+  (0 nat)
+
+      (x nat)
+  ────────────── succ-def
+  ((succ x) nat))
+
+(define 1 (succ 0))
+(define 2 (succ 1))</code></figure>
+    </section>
+  </article>
+</aside>
 <main>
   <article>
     <section>
@@ -70,13 +107,13 @@ Term = Lit Name
         <code>(infix ⊗ prec)</code> declares “⊗” as an infix operator
         with precedence “prec”.<br>
         Then it can be used in such way:
-        <code>[a ⊗ b ⊗ c ...]</code> will be converted
+        <code>(# a ⊗ b ⊗ c ...)</code> will be converted
         to <code>(a ⊗ (b ⊗ (c ...)))</code>.
         Multiple infix operators in one form
         will be resolved according to their precedences.<br>
-        But be careful: by default, trees inside square brackets will <b>not</b>
-        be resolved as infix.<br>
-        So, <code>[a ⊗ (b ⊗ c ⊗ d)]</code>
+        But be careful: by default, trees inside <code>(# ...)</code>
+        will <b>not</b> be resolved as infix.<br>
+        So, <code>(# a ⊗ (b ⊗ c ⊗ d))</code>
         is not <code>(a ⊗ (b ⊗ (c ⊗ d)))</code>, but it is
         <code>(a ⊗ (b ⊗ c ⊗ d))</code>. Also note that there is
         distinction between <code>(a ⊗ (b ⊗ c))</code> and <code>(a ⊗ b ⊗ c)</code>.

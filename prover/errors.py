@@ -1,7 +1,18 @@
+from io import StringIO
+from sexpdata import dump
+
 class VerificationError(Exception):
     def __init__(self, message):
         self.message = message
         Exception.__init__(self, message)
+
+class InvalidTermError(VerificationError):
+    def __init__(self, expr):
+        stream = StringIO()
+        dump(expr, stream)
+        VerificationError.__init__(
+            self, "invalid term: %s" % stream.getvalue()
+        )
 
 class UnificationError(VerificationError):
     def __init__(self, α, β):
