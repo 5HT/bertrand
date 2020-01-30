@@ -15,6 +15,8 @@ def subst(name : Name, μ : Term, τ : Term) -> Term:
             return τ
     elif isinstance(τ, Symtree):
         return Symtree(maplist(partial(subst, name, μ), τ.children))
+    elif isinstance(τ, Hole):
+        return τ
 
 def multisubst(substitutions : Dict[Name, Term], τ : Term) -> Term:
     salt = gensym()

@@ -62,8 +62,8 @@ class InferenceRule:
 
 @dataclass
 class State:
-    variables : List[Name]               = field(default_factory=list)
-    infix     : Dict[Symbol, int]        = field(default_factory=dict)
-    context   : Dict[Name, State]        = field(default_factory=dict)
-    bound     : List[Term]               = field(default_factory=list)
-    defs      : List[Tuple[Term, Term]]  = field(default_factory=list)
+    variables : List[Name]                = field(default_factory=list)
+    infix     : Dict[Symbol, int]         = field(default_factory=dict)
+    context   : Dict[Name, InferenceRule] = field(default_factory=dict)
+    bound     : List[Term]                = field(default_factory=list)
+    defs      : List[Tuple[Term, Term]]   = field(default_factory=list)
