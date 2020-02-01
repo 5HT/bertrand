@@ -25,13 +25,6 @@ class UnificationError(VerificationError):
             "“%s” cannot be unified with “%s”" % (α, β)
         )
 
-class ModusPonensError(VerificationError):
-    def __init__(self, φ):
-        VerificationError.__init__(
-            self,
-            "“%s” does not have modus ponens rule" % φ
-        )
-
 class AdmittedError(VerificationError):
     def __init__(self):
         VerificationError.__init__(self, "admitted")
