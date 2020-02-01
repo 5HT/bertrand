@@ -120,11 +120,14 @@ def sorry(tree : Sorry, τ : Term):
 def infer(ctx : Dict[Name, InferenceRule], bound : List[Term],
           tree : Derivation) -> Term:
     statement = lookup(ctx, tree.edge)
-    assert len(tree.children) == len(statement.premises), \
-           "expected %d arguments, but got %d" % (
+    if len(tree.children) != len(statement.premises):
+        raise VerificationError(
+           "%s expects %d arguments, but got %d" % (
+               tree.edge,
                len(statement.premises),
                len(tree.children)
            )
+        )
 
     for premise, child in zip(statement.premises, tree.children):
         checksubst(bound, tree.substitutions, premise)

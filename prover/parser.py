@@ -11,6 +11,8 @@ def symbol(expr):
         return expr.value()
     elif isinstance(expr, int):
         return str(expr)
+    elif isinstance(expr, str):
+        return expr
 
     raise SyntaxError("expected symbol at “%s”" % expr)
 

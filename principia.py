@@ -1,5 +1,8 @@
 from functools import partial
+from dataclasses import dataclass
 from sys import argv
+
+import os
 
 import sexpdata
 from sexpdata import Symbol, Bracket
@@ -39,8 +42,11 @@ def postulate(curr, expr):
         if isseparator(elem):
             name = symbol(expr.pop(0))
             conclusion = parseterm(curr, expr.pop(0))
-            curr.context[name] = InferenceRule(premises.copy(), conclusion)
 
+            if name in curr.context:
+                print("Error: “%s” is already postulated" % name)
+            else:
+                curr.context[name] = InferenceRule(premises.copy(), conclusion)
             premises.clear()
         else:
             premises.append(parseterm(curr, elem))
@@ -90,8 +96,7 @@ def preamble(curr, expr):
             return name, conclusion, names, premises, tree(curr, elem)
 
 def theorem(curr, expr):
-    if not expr:
-        return
+    if not expr: return
 
     name, conclusion, names, premises, proof = preamble(curr, expr)
     τctx = curr.context.copy()
@@ -100,20 +105,29 @@ def theorem(curr, expr):
         for name, τ in zip(names, premises)
     )
 
-    try:
-        check(τctx, curr.bound, conclusion, proof)
-        print("“%s” checked" % name)
-        curr.context[name] = InferenceRule(premises, conclusion)
-    except VerificationError as ex:
-        print("“%s” has not been checked" % name)
-        print("Error: %s" % ex.message)
-
+    if name in curr.context:
+            print("Error: theorem “%s” is already defined" % name)
+    else:
+        try:
+            check(τctx, curr.bound, conclusion, proof)
+            print("“%s” checked" % name)
+            curr.context[name] = InferenceRule(premises, conclusion)
+        except VerificationError as ex:
+            print("“%s” has not been checked" % name)
+            print("Error: %s" % ex.message)
     theorem(curr, expr)
 
 def infix(curr, expr):
-    name, prec = expr
+    ident, prec = expr
     assert isinstance(prec, int), "precedence must be an integer"
-    curr.infix[symbol(name)] = prec
+    name = symbol(ident)
+
+    if name in curr.infix:
+        print("Error: operator “%s” (%d) is already defined" % (
+            name, curr.infix[name]
+        ))
+    else:
+        curr.infix[name] = prec
 
 def variables(curr, expr):
     curr.variables.extend(maplist(symbol, expr))
@@ -127,6 +141,10 @@ def define(curr, expr):
         (term(curr, pattern), parseterm(curr, body))
     )
 
+def include(curr, exprs):
+    for expr in exprs:
+        dopath(curr, symbol(expr))
+
 forms = {
     "postulate": postulate,
     "theorem": theorem,
@@ -134,8 +152,10 @@ forms = {
     "infix": infix,
     "variables": variables,
     "bound": bound,
-    "define": define
+    "define": define,
+    "include": include
 }
+
 def evaluate(curr, expr):
     head, *tail = expr
     form = symbol(head)
@@ -148,9 +168,19 @@ def doexprs(curr, string):
     for expr in sexpdata.parse(string):
         evaluate(curr, expr)
 
-appname, *filenames = argv
-curr = State()
-for filename in filenames:
+def dofile(state, filename):
     print("Checking %s" % filename)
     with open(filename, 'r', encoding='utf-8') as fin:
-        doexprs(curr, fin.read())
+        doexprs(state, fin.read())
+
+def dopath(state, path):
+    if not os.path.exists(path):
+        print("Error: path %s does not exists" % path)
+    elif os.path.isdir(path):
+        print("Error: path %s is a directory" % path)
+    else:
+        dofile(state, path)
+
+appname, *filenames = argv
+state = State()
+for filename in filenames: dopath(state, filename)

@@ -6,6 +6,10 @@ class VerificationError(Exception):
         self.message = message
         Exception.__init__(self, message)
 
+class AlreadyDefinedError(VerificationError):
+    def __init__(self, name):
+        VerificationError.__init__(self, "“%s” is already defined" % name)
+
 class InvalidTermError(VerificationError):
     def __init__(self, expr):
         stream = StringIO()
