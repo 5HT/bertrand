@@ -75,7 +75,7 @@ def even(φ : Term, ψ : Term):
     if φ != ψ:
         raise UnificationError(φ, ψ)
 
-def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> Term:
+def lookup(ctx : Dict[Name, InferenceRule], name : Name) -> InferenceRule:
     if name in ctx:
         return ctx[name]
     else:
