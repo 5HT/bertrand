@@ -44,7 +44,7 @@ def unify(substs : Dict[Name, Term], α : Term, β : Term) -> bool:
     if isinstance(φ, Var):
         substs[φ.name] = ψ
         return True
-    if isinstance(φ, Lit) and isinstance(ψ, Lit):
+    elif isinstance(φ, Lit) and isinstance(ψ, Lit):
         return φ.name == ψ.name
     elif isinstance(φ, Symtree) and isinstance(ψ, Symtree):
         if len(φ.children) != len(ψ.children):

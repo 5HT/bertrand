@@ -13,15 +13,6 @@ def comp(*funcs):
     comp2 = lambda f, g: lambda x: f(g(x))
     return reduce(comp2, funcs, idfun)
 
-def evensplit(it):
-    if isinstance(it, list): it = iter(it)
-
-    try:
-        for elem in it:
-            yield (elem, next(it))
-    except StopIteration:
-        return
-
 maplist = lambda f, x: list(map(f, x))
 
 val = 0

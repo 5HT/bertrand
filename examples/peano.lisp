@@ -17,8 +17,8 @@
 (lemma
   ─────── 1-def
   (1 nat)
-  (succ-def 0-def (x 0))
+  (succ-def [x ≔ 0] 0-def)
 
   ─────── 2-def
   (2 nat)
-  (succ-def 1-def (x 1)))
+  (succ-def [x ≔ 1] 1-def))

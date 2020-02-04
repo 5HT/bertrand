@@ -39,13 +39,13 @@
   ────────────────────── wikimedia-example
   ((# α → β → α ∧ β) true)
   (→-intro
-    (truth-elim u ())
+    [β ≔ (# β → α ∧ β)]
+    (truth-elim u)
     (→-intro
-      (truth-elim w (α β))
-      (∧-intro u w ())
-      (α β
-       β (# α ∧ β)))
-    (β (# β → α ∧ β)))
+      [α ≔ β
+       β ≔ (# α ∧ β)]
+      (truth-elim [α ≔ β] w)
+      (∧-intro u w)))
 
   ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
   ────────────── α,β
@@ -53,6 +53,6 @@
   ────────────── ∧-rev
   ((β ∧ α) true)
   (∧-intro
-    (∧-elim-right (α,β ()) ())
-    (∧-elim-left  (α,β ()) ())
-    (α β β α)))
+    [α ≔ β β ≔ α]
+    (∧-elim-right α,β)
+    (∧-elim-left  α,β)))

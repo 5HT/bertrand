@@ -54,24 +54,35 @@ def postulate(curr, expr):
     if nonempty(premises):
         raise SyntaxError("incomplete definition")
 
-def keyvalue(curr, pair):
-    ident, τ = pair
-    return (symbol(ident), parseterm(curr, τ))
+separators = [":=", "≔"]
+def genenv(curr, it):
+    if isinstance(it, list): it = iter(it)
 
-def genenv(curr, lst):
-    return map(partial(keyvalue, curr),
-               evensplit(lst))
+    for elem in it:
+        var = symbol(elem)
+        try:
+            sep, expr = symbol(next(it)), parseterm(curr, next(it))
+        except StopIteration:
+            raise SyntaxError("“%s” mapped to nothing" % var)
+
+        if sep not in separators:
+            raise SyntaxError("invalid substitution list")
+        yield (var, expr)
 
 def tree(curr, expr):
     if isinstance(expr, list):
-        ident, *judgments, rest = expr
+        ident, *rest = expr
         name = symbol(ident)
 
-        if name == "sorry":
-            return Sorry(symbol(rest))
+        if nonempty(rest) and isinstance(first(rest), Bracket):
+            substs = dict(genenv(curr, rest.pop(0).value()))
         else:
-            return Proof(name, maplist(partial(tree, curr), judgments),
-                         dict(genenv(curr, rest)))
+            substs = {}
+
+        if name == "sorry":
+            return Sorry(" ".join(map(symbol, rest)))
+        else:
+            return Proof(name, maplist(partial(tree, curr), rest), substs)
     elif isinstance(expr, Symbol):
         return Proof(symbol(expr), [], {})
     elif isinstance(expr, int):
