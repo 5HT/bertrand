@@ -39,21 +39,21 @@ def prune(substs : Dict[Name, Term], τ : Term):
     else:
         return τ
 
-def unify(substs : Dict[Name, Term], α : Term, β : Term) -> bool:
-    φ, ψ = prune(substs, α), prune(substs, β)
-    if isinstance(φ, Var):
-        substs[φ.name] = ψ
+def match(substs : Dict[Name, Term], patt : Term, τ : Term) -> bool:
+    σ = prune(substs, patt)
+    if isinstance(σ, Var):
+        substs[σ.name] = τ
         return True
-    elif isinstance(φ, Lit) and isinstance(ψ, Lit):
-        return φ.name == ψ.name
-    elif isinstance(φ, Symtree) and isinstance(ψ, Symtree):
-        if len(φ.children) != len(ψ.children):
+    elif isinstance(σ, Lit) and isinstance(τ, Lit):
+        return σ.name == τ.name
+    elif isinstance(σ, Symtree) and isinstance(τ, Symtree):
+        if len(σ.children) != len(τ.children):
             return False
-        for δφ, δψ in zip(φ.children, ψ.children):
-            if not unify(substs, δφ, δψ):
+        for δσ, δτ in zip(σ.children, τ.children):
+            if not match(substs, δσ, δτ):
                 return False
         return True
-    elif isinstance(φ, Hole):
+    elif isinstance(σ, Hole):
         return True
     else:
         return False
@@ -86,7 +86,7 @@ def getbound(bound : List[Term], τ : Term) -> List[Name]:
 
     for formula in bound:
         substs = {}
-        if unify(substs, formula, τ):
+        if match(substs, formula, τ):
             for name, σ in substs.items():
                 if not isinstance(σ, Var):
                     raise VerificationError("“%s” expected to be a variable" % σ)

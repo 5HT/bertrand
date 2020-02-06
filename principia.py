@@ -10,7 +10,7 @@ from sexpdata import Symbol, Bracket
 from prover.datatypes import *
 from prover.prelude import *
 from prover.errors import *
-from prover.checker import unify, multisubst, check
+from prover.checker import match, multisubst, check
 from prover.parser import symbol, term
 
 def containsonly(ch, s):
@@ -26,7 +26,7 @@ def parseterm(curr, expr):
 def macroexpand(curr, τ):
     for pattern, body in curr.defs:
         substs = {}
-        if unify(substs, pattern, τ):
+        if match(substs, pattern, τ):
             τ = multisubst(substs, body)
             break
 
