@@ -62,5 +62,5 @@
   ───────────── 1+1
   ((1 + 1) = 2)
   (=-trans [x ≔ (1 + 1) y ≔ (succ (1 + 0)) z ≔ 2]
-    (+-succ [x ≔ (succ 0) y ≔ 0] 1-def 0-def)
+    (+-succ [x ≔ 1 y ≔ 0] 1-def 0-def)
     (=-succ [x ≔ (1 + 0) y ≔ 1] (+-zero [x ≔ 1] 1-def))))
