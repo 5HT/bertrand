@@ -1,3 +1,15 @@
+type sexp =
+| Atom of string
+| Int of int
+| List of sexp list
+| Supp of sexp list
+
+let rec showSExp : sexp -> string = function
+  | Atom s  -> s
+  | Int x   -> string_of_int x
+  | List xs -> "(" ^ String.concat " " (List.map showSExp xs) ^ ")"
+  | Supp xs -> "[" ^ String.concat " " (List.map showSExp xs) ^ "]"
+
 type name = string
 
 type term =

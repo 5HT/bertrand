@@ -124,4 +124,4 @@ let rec infer (ctx : inferenceRule Env.t) bound tree =
 
 let check ctx bound tau : derivation -> unit = function
   | Sorry x -> sorry (Sorry x) tau
-  | Proof x -> let pi = infer ctx bound x in even pi tau
+  | Proof x -> even (infer ctx bound x) tau
