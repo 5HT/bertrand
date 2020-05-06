@@ -26,11 +26,11 @@ let prettyPrintError : exn -> unit = function
     Printf.printf "Cannot replace bound variable “%s” with a constant “%s”\n"
       name (showTerm omega)
   | ReplacingWithBound (a, b) ->
-    Printf.printf "Cannot replace “%s” with “%s”, because “%s” is bound" a b b
+    Printf.printf "Cannot replace “%s” with “%s”, because “%s” is bound\n" a b b
   | UnificationError (u, v) ->
     Printf.printf "“%s” cannot be unified with “%s”\n" (showTerm u) (showTerm v)
   | ExpectedVariable u ->
-    Printf.printf "“%s” expected to be a variable" (showTerm u)
+    Printf.printf "“%s” expected to be a variable\n" (showTerm u)
   | MatchError (u, v) ->
     Printf.printf "“%s” does not match “%s”\n" (showTerm u) (showTerm v)
   | AdmittedError -> print_endline "Admitted."

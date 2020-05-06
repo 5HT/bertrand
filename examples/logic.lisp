@@ -15,12 +15,6 @@
   ─────────────────── no-upper-bound
   (∀ a (∃ b (a > b))))
 
-;; fails
-(lemma
-  ─────────────────── variable-bound-fail
-  (∀ b (∃ b (b > b)))
-  (no-upper-bound [a ≔ b]))
-
 (postulate
   α (α → β)
   ───────── mp
@@ -82,3 +76,9 @@
        β ≔ (α → γ)] g
       (mp [α ≔ (# α → β → γ)
            β ≔ ((α → β) → (α → γ))] h CR)))
+
+;; fails
+(lemma
+  ─────────────────── variable-bound-fail
+  (∀ b (∃ b (b > b)))
+  (no-upper-bound [a ≔ b]))
