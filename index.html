@@ -30,8 +30,19 @@
       <figure style="max-width: 100%;">
         <code>$ pip install sexpdata
 $ git clone https://github.com/groupoid/principia
-$ cd principia
-$ python principia.py examples/logic.lisp</code>
+$ cd principia/python
+$ python principia.py ../examples/logic.lisp</code>
+      </figure>
+      <p>Alternatively you can use OCaml-version,
+        which requires OCaml 4.05+, ocamlbuild, ocamllex and Menhir.
+      </p>
+      <figure style="max-width: 100%;">
+        <code>$ git clone https://github.com/groupoid/principia
+$ cd principia/ocaml
+$ make
+ocamlbuild -use-menhir principia.native
+Finished, 29 targets (29 cached) in 00:00:03.
+$ ./principia.native ../examples/logic.lisp</code>
       </figure>
     </section>
     <section>
