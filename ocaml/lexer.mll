@@ -3,8 +3,7 @@
   open Lexing
 }
 
-let int    = ['0'-'9']
-let bytes1 = [^ '\t' ' ' '\r' '\n' '(' ')' '[' ']' '0'-'9']
+let bytes1 = [^ '\t' ' ' '\r' '\n' '(' ')' '[' ']']
 let bytes2 = ['\192'-'\223']['\128'-'\191']
 let bytes3 = ['\224'-'\239']['\128'-'\191']['\128'-'\191']
 let bytes4 = ['\240'-'\247']['\128'-'\191']['\128'-'\191']['\128'-'\191']
@@ -21,6 +20,6 @@ rule main = parse
 | ")"        { RPAR }
 | "["        { LSQR }
 | "]"        { RSQR }
-| utf8+ as s { IDENT s }
-| int+ as s  { INT (int_of_string s) }
+| utf8+ as s { try INT (int_of_string s)
+               with Failure _ -> IDENT s }
 | eof        { EOF }

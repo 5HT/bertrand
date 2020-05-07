@@ -47,6 +47,7 @@ def postulate(curr, expr):
                 print("Error: “%s” is already postulated" % name)
             else:
                 curr.context[name] = InferenceRule(premises.copy(), conclusion)
+                print("“%s” postulated" % name)
             premises.clear()
         else:
             premises.append(parseterm(curr, elem))

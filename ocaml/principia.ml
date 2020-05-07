@@ -134,12 +134,16 @@ let evalTheorem src =
     if Env.mem name !st.context then
       raise (AlreadyDefinedError name)
     else
-      check !ctx !st.bound conclusion proof;
-      Printf.printf "“%s” checked\n" name;
-      st := { !st with context =
-        Env.add name { premises   = premises;
-                       conclusion = conclusion }
-                !st.context }
+      try
+        check !ctx !st.bound conclusion proof;
+        Printf.printf "“%s” checked\n" name;
+        st := { !st with context =
+          Env.add name { premises   = premises;
+                         conclusion = conclusion }
+                  !st.context }
+      with ex ->
+        Printf.printf "“%s” has not been checked\n" name;
+        prettyPrintError ex
   done
 
 let rec eval : sexp list -> unit = function
@@ -160,15 +164,16 @@ let rec eval : sexp list -> unit = function
       let x = pop stack in
       if isSeparator x then
         let name       = symbol (pop stack) in
-        let conclusion = pop stack in
+        let conclusion = parseTerm !st (pop stack) in
         if Env.mem name !st.context then
           raise (AlreadyDefinedError name)
         else begin
           st := { !st with context =
                   Env.add name
                     { premises   = !premises;
-                      conclusion = parseTerm !st conclusion }
+                      conclusion = conclusion }
                     !st.context };
+          Printf.printf "“%s” postulated\n" name;
           premises := []
         end
       else premises := !premises @ [parseTerm !st x]
