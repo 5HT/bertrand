@@ -52,48 +52,38 @@
 (theorem
   ───────────────────────── 1-def
   (ℕ-ctx ⊢ (succ 0) : ℕ)
-  (λ-elim [Γ ≔ ℕ-ctx
-           e₁ ≔ succ e₂ ≔ 0
-           σ ≔ ℕ τ ≔ ℕ]
-          ℕ-ctx-def
-          (ctx-intro [Γ ≔ ℕ-ctx x ≔ succ σ ≔ (ℕ → ℕ)]
-                     ℕ-ctx-def succ-def)
-          (ctx-intro [Γ ≔ ℕ-ctx x ≔ 0 σ ≔ ℕ]
-                     ℕ-ctx-def 0-def)))
+  succ-type (ctx-intro [Γ ≔ ℕ-ctx x ≔ succ σ ≔ (ℕ → ℕ)]
+                       ℕ-ctx-def succ-def)
+  lam-type (ctx-intro [Γ ≔ ℕ-ctx x ≔ 0 σ ≔ ℕ]
+                      ℕ-ctx-def 0-def)
+  th (λ-elim [Γ ≔ ℕ-ctx e₁ ≔ succ e₂ ≔ 0 σ ≔ ℕ τ ≔ ℕ]
+             ℕ-ctx-def succ-type lam-type))
 
 (theorem
   ──────────────────────── λ-ctx-def
   ((ℕ-ctx ∪ (x : ℕ)) ctx)
-  (ctx-∪ [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def)
+  th (ctx-∪ [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def))
 
+(theorem
   ──────────────────────────────────────── λ-ctx-contains-succ
   ((ℕ-ctx ∪ (x : ℕ)) ⊢ succ : (ℕ → ℕ))
-  (ctx-intro
-    [Γ ≔ (ℕ-ctx ∪ (x : ℕ))
-     x ≔ succ σ ≔ (ℕ → ℕ)]
-    λ-ctx-def
-    (∪-conservativity
-      [Γ ≔ ℕ-ctx x ≔ succ y ≔ x
-       σ ≔ (ℕ → ℕ) τ ≔ ℕ]
-      ℕ-ctx-def succ-def))
+  succ∈ctx (∪-conservativity [Γ ≔ ℕ-ctx x ≔ succ y ≔ x σ ≔ (ℕ → ℕ) τ ≔ ℕ]
+                             ℕ-ctx-def succ-def)
+  th (ctx-intro [Γ ≔ (ℕ-ctx ∪ (x : ℕ)) x ≔ succ σ ≔ (ℕ → ℕ)]
+                λ-ctx-def succ∈ctx))
 
+(theorem
   ────────────────────────────────────────────────── succ-twice
   (ℕ-ctx ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
-  (λ-intro [Γ ≔ ℕ-ctx σ ≔ ℕ τ ≔ ℕ e ≔ (succ (succ x))]
-           ℕ-ctx-def
-           (λ-elim [Γ ≔ (ℕ-ctx ∪ (x : ℕ))
-                    e₁ ≔ succ e₂ ≔ (succ x)
-                    σ ≔ ℕ τ ≔ ℕ]
-                   λ-ctx-def λ-ctx-contains-succ
-                   (λ-elim [Γ ≔ (ℕ-ctx ∪ (x : ℕ))
-                            e₁ ≔ succ e₂ ≔ x
-                            σ ≔ ℕ τ ≔ ℕ]
-                           λ-ctx-def λ-ctx-contains-succ
-                           (ctx-intro
-                             [Γ ≔ (ℕ-ctx ∪ (x : ℕ)) σ ≔ ℕ]
-                             λ-ctx-def
-                             (ctx-∈ [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def)))))
+  x∈ctx (ctx-∈ [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def)
+  x-type (ctx-intro [Γ ≔ (ℕ-ctx ∪ (x : ℕ)) σ ≔ ℕ] λ-ctx-def x∈ctx)
+  λ-app (λ-elim [Γ ≔ (ℕ-ctx ∪ (x : ℕ)) e₁ ≔ succ e₂ ≔ x σ ≔ ℕ τ ≔ ℕ]
+                λ-ctx-def λ-ctx-contains-succ x-type)
+  λ-app² (λ-elim [Γ ≔ (ℕ-ctx ∪ (x : ℕ)) e₁ ≔ succ e₂ ≔ (succ x) σ ≔ ℕ τ ≔ ℕ]
+                 λ-ctx-def λ-ctx-contains-succ λ-app)
+  th (λ-intro [Γ ≔ ℕ-ctx σ ≔ ℕ τ ≔ ℕ e ≔ (succ (succ x))] ℕ-ctx-def λ-app²))
 
+(theorem
   ────────────────────────────────────────────────────── fail
   (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
-  (succ-twice [x ≔ succ]))
+  th (succ-twice [x ≔ succ]))

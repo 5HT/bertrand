@@ -10,7 +10,7 @@ from sexpdata import Symbol, Bracket
 from prover.datatypes import *
 from prover.prelude import *
 from prover.errors import *
-from prover.checker import match, multisubst, check
+from prover.checker import match, multisubst, infer, check
 from prover.parser import symbol, term
 
 def containsonly(ch, s):
@@ -70,26 +70,31 @@ def genenv(curr, it):
             raise SyntaxError("invalid substitution list")
         yield (var, expr)
 
-def tree(curr, expr):
-    if isinstance(expr, list):
-        ident, *rest = expr
-        name = symbol(ident)
-
-        if nonempty(rest) and isinstance(first(rest), Bracket):
-            substs = dict(genenv(curr, rest.pop(0).value()))
-        else:
-            substs = {}
-
-        if name == "sorry":
-            return Sorry(" ".join(map(symbol, rest)))
-        else:
-            return Proof(name, maplist(partial(tree, curr), rest), substs)
-    elif isinstance(expr, Symbol):
-        return Proof(symbol(expr), [], {})
-    elif isinstance(expr, int):
-        return Proof(str(expr), [], {})
+def argument(expr):
+    if isinstance(expr, Symbol) or \
+       isinstance(expr, int):
+        return Lemma(symbol(expr))
     else:
-        raise SyntaxError("“%s” is not proof tree" % str(expr))
+        edge, tag = expr
+        if edge != Symbol("sorry"):
+            raise SyntaxError("invalid proof term")
+        return Sorry(symbol(tag))
+
+def proof(curr, expr) -> Proof:
+    edge, *args = expr
+    if isinstance(first(args), Bracket):
+        substs = args.pop(0)
+    else:
+        substs = Bracket([], '[')
+
+    return Proof(symbol(edge), maplist(argument, args), dict(genenv(curr, substs.value())))
+
+def proofs(curr, expr):
+    res = []
+    while nonempty(expr):
+        name, body = symbol(expr.pop(0)), proof(curr, expr.pop(0))
+        res.append((name, body))
+    return res
 
 def preamble(curr, expr):
     names, premises = [], []
@@ -105,12 +110,14 @@ def preamble(curr, expr):
             premises.append(parseterm(curr, elem))
         else:
             name, conclusion = names.pop(), premises.pop()
-            return name, conclusion, names, premises, tree(curr, elem)
+            return name, conclusion, names, premises, proofs(curr, [elem] + expr)
 
 def theorem(curr, expr):
     if not expr: return
 
-    name, conclusion, names, premises, proof = preamble(curr, expr)
+    name, conclusion, names, premises, proofs = preamble(curr, expr)
+    _, proof = proofs.pop()
+
     τctx = curr.context.copy()
     τctx.update(
         (name, InferenceRule([], τ)) \
@@ -118,16 +125,17 @@ def theorem(curr, expr):
     )
 
     if name in curr.context:
-            print("Error: theorem “%s” is already defined" % name)
+        print("Error: theorem “%s” is already defined" % name)
     else:
         try:
+            for x, xs in proofs:
+                τctx[x] = InferenceRule([], infer(τctx, curr.bound, xs))
             check(τctx, curr.bound, conclusion, proof)
             print("“%s” checked" % name)
             curr.context[name] = InferenceRule(premises, conclusion)
         except VerificationError as ex:
             print("“%s” has not been checked" % name)
             print("Error: %s" % ex.message)
-    theorem(curr, expr)
 
 def infix(curr, expr):
     ident, prec = expr

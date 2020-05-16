@@ -114,38 +114,32 @@ def checksubst(bound : List[Term], substitutions : Dict[Name, Term], τ : Term):
                 )
             )
 
-def sorry(tree : Sorry, τ : Term):
-    print("%s: expected “%s”" % (tree.name, τ))
+def sorry(arg : Sorry, τ : Term):
+    print("%s: expected “%s”" % (arg.name, τ))
 
-def infer(ctx : Dict[Name, InferenceRule], bound : List[Term],
-          tree : Derivation) -> Term:
+def infer(ctx : Dict[Name, InferenceRule], bound : List[Term], tree : Proof) -> Term:
     statement = lookup(ctx, tree.edge)
-    if len(tree.children) != len(statement.premises):
+    if len(tree.arguments) != len(statement.premises):
         raise VerificationError(
            "%s expects %d arguments, but got %d" % (
                tree.edge,
                len(statement.premises),
-               len(tree.children)
+               len(tree.arguments)
            )
         )
 
-    for premise, child in zip(statement.premises, tree.children):
+    for premise, arg in zip(statement.premises, tree.arguments):
         checksubst(bound, tree.substitutions, premise)
         expected = multisubst(tree.substitutions, premise)
-        if isinstance(child, Sorry):
-            sorry(child, expected)
-        elif isinstance(child, Proof):
-            τ = infer(ctx, bound, child)
-            even(expected, τ)
+
+        if isinstance(arg, Lemma):
+            even(expected, infer(ctx, bound, Proof(arg.name, [], {})))
+        else:
+            sorry(arg, expected)
 
     checksubst(bound, tree.substitutions, statement.conclusion)
     return multisubst(tree.substitutions, statement.conclusion)
 
 def check(ctx : Dict[Name, InferenceRule], bound : List[Term],
-          τ : Term, tree : Derivation):
-    # top-level sorry
-    if isinstance(tree, Sorry):
-        sorry(tree, τ)
-    else:
-        π = infer(ctx, bound, tree)
-        even(π, τ)
+          τ : Term, tree : Proof):
+    even(infer(ctx, bound, tree), τ)

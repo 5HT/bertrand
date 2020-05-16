@@ -102,26 +102,26 @@ let checkSubst (bound : term list) (substs : env) tau =
     | _ -> ())
     substs
 
-let sorry tree tau =
-  match tree with
+let sorry arg tau =
+  match arg with
   | Sorry name -> Printf.printf "%s: expected “%s”" name (showTerm tau)
   | _          -> ()
 
 let rec infer (ctx : inferenceRule Env.t) bound tree =
   let statement = lookup ctx tree.edge in
-  let v1 = List.length tree.children in
+  let v1 = List.length tree.arguments in
   let v2 = List.length statement.premises in
   if v1 <> v2 then raise (ApplicationMismatch (tree.edge, v1, v2)) else ();
-  List.iter2 (fun premise child ->
+  List.iter2 (fun premise arg ->
     checkSubst bound tree.substitutions premise;
     let expected = multisubst tree.substitutions premise in
-    match child with
-    | Sorry _ -> sorry child expected
-    | Proof x -> infer ctx bound x |> even expected)
-    statement.premises tree.children;
+    match arg with
+    | Sorry _ -> sorry arg expected
+    | Lemma x ->
+      let xs = { edge = x; arguments = []; substitutions = Env.empty } in
+      even expected (infer ctx bound xs))
+    statement.premises tree.arguments;
   checkSubst bound tree.substitutions statement.conclusion;
   multisubst tree.substitutions statement.conclusion
 
-let check ctx bound tau : derivation -> unit = function
-  | Sorry x -> sorry (Sorry x) tau
-  | Proof x -> even (infer ctx bound x) tau
+let check ctx bound tau x = even (infer ctx bound x) tau

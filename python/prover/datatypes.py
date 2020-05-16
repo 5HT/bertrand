@@ -6,7 +6,7 @@ from sexpdata import Symbol
 __all__ = [
     "Name", "Term",
     "Lit", "Var", "Symtree", "Hole",
-    "Derivation", "Sorry", "Proof",
+    "Argument", "Sorry", "Lemma", "Proof",
     "InferenceRule", "State"
 ]
 
@@ -43,17 +43,21 @@ def sexpr(τ):
         raise TypeError("this should never happens (naked Term)")
 Term.__str__ = sexpr
 
-class Derivation: pass
+class Argument: pass
 
 @dataclass
-class Proof(Derivation):
-    edge          : Name
-    children      : List[Derivation]
-    substitutions : Dict[Name, Term]
-
-@dataclass
-class Sorry(Derivation):
+class Sorry(Argument):
     name : str
+
+@dataclass
+class Lemma(Argument):
+    name : Name
+
+@dataclass
+class Proof:
+    edge          : Name
+    arguments     : List[Argument]
+    substitutions : Dict[Name, Term]
 
 @dataclass
 class InferenceRule:

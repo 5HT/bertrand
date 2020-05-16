@@ -26,14 +26,16 @@ let rec showTerm : term -> string = function
 
 module Env = Map.Make(String)
 
-type derivation =
-| Proof of proof
-| Sorry of string
-and proof =
+type env = term Env.t
+
+type argument =
+  | Sorry of name
+  | Lemma of name
+
+type proof =
 { edge          : name;
-  children      : derivation list;
+  arguments     : argument list;
   substitutions : env }
-and env = term Env.t
 
 type inferenceRule =
 { premises   : term list;

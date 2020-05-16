@@ -62,7 +62,7 @@ let genEnv curr xs =
     | _ -> raise (Other "Invalid substitution list.") in
   genEnvAux Env.empty xs
 
-let rec parseDeriv curr : sexp -> derivation = function
+(*let rec parseDeriv curr : sexp -> derivation = function
   | List (Atom "sorry" :: xs) ->
     Sorry (String.concat " " (List.map symbol xs))
   | List (name :: Supp xs :: ys) ->
@@ -79,7 +79,30 @@ let rec parseDeriv curr : sexp -> derivation = function
   | expr -> showSExp expr
             |> Printf.sprintf "“%s” is not proof tree"
             |> fun x -> Other x
+            |> raise*)
+
+let parseArgument : sexp -> argument = function
+  | Atom x -> Lemma x
+  | List [Atom "sorry"; Atom x] -> Sorry x
+  | expr -> showSExp expr
+            |> Printf.sprintf "“%s” is not valid argument"
+            |> fun x -> Other x
             |> raise
+
+let parseProof curr : sexp -> proof = function
+  | List (Atom edge :: Supp substs :: args) ->
+    { edge = edge; arguments = List.map parseArgument args;
+      substitutions = genEnv curr substs }
+  | List (Atom edge :: args) ->
+    { edge = edge; arguments = List.map parseArgument args;
+      substitutions = Env.empty }
+  | expr -> showSExp expr
+            |> Printf.sprintf "“%s” is not valid proof"
+            |> fun x -> Other x
+            |> raise
+
+let parseProofs curr expr : (name * proof) list =
+  oddEvenMap symbol (parseProof curr) expr
 
 let pop (xs : ('a list) ref) : 'a =
   match !xs with
@@ -110,7 +133,7 @@ let preamble curr (expr : (sexp list) ref) =
   let name = pop names in let conclusion = pop premises in
   (name, conclusion,
    List.rev !names, List.rev !premises,
-   parseDeriv curr !elem)
+   parseProofs curr (!elem :: !expr))
 
 let init : state =
   { variables = [];
@@ -121,30 +144,30 @@ let init : state =
 
 let st : state ref = ref init
 
+let upTerm ctx name tau = Env.add name { premises = []; conclusion = tau } ctx
+
 let evalTheorem src =
-  let expr : (sexp list) ref = ref src in
-  while nonempty !expr do
-    let (name, conclusion, names, premises, proof) = preamble !st expr in
-    let ctx = ref !st.context in
-    List.iter2
-      (fun name tau ->
-        ctx := Env.add name { premises   = [];
-                              conclusion = tau } !ctx)
-      names premises;
-    if Env.mem name !st.context then
-      raise (AlreadyDefinedError name)
-    else
-      try
-        check !ctx !st.bound conclusion proof;
-        Printf.printf "“%s” checked\n" name;
-        st := { !st with context =
-          Env.add name { premises   = premises;
-                         conclusion = conclusion }
-                  !st.context }
-      with ex ->
-        Printf.printf "“%s” has not been checked\n" name;
-        prettyPrintError ex
-  done
+  let (name, conclusion, names, premises, proofs') = preamble !st (ref src) in
+  let (proofs, (_, proof)) = extractLast proofs' in
+  let ctx = ref !st.context in
+  List.iter2
+    (fun name tau -> ctx := upTerm !ctx name tau)
+    names premises;
+  if Env.mem name !st.context then
+    raise (AlreadyDefinedError name)
+  else
+    try
+      List.iter (fun p ->
+        ctx := upTerm !ctx (fst p) (snd p |> infer !ctx !st.bound)) proofs;
+      check !ctx !st.bound conclusion proof;
+      Printf.printf "“%s” checked\n" name;
+      st := { !st with context =
+        Env.add name { premises   = premises;
+                       conclusion = conclusion }
+                !st.context }
+    with ex ->
+      Printf.printf "“%s” has not been checked\n" name;
+      prettyPrintError ex
 
 let rec eval : sexp list -> unit = function
   | [Atom "infix"; Atom op; Int prec] ->

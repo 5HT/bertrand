@@ -38,21 +38,19 @@
   (α true)    (β true)
   ────────────────────── wikimedia-example
   ((# α → β → α ∧ β) true)
-  (→-intro
-    [β ≔ (# β → α ∧ β)]
-    (truth-elim u)
-    (→-intro
-      [α ≔ β
-       β ≔ (# α ∧ β)]
-      (truth-elim [α ≔ β] w)
-      (∧-intro u w)))
+  α-inst (truth-elim u)
+  β-inst (truth-elim [α ≔ β] w)
+  α,β (∧-intro u w)
+  β→α∧β (→-intro [α ≔ β β ≔ (α ∧ β)] β-inst α,β)
+  th (→-intro [β ≔ (# β → α ∧ β)] α-inst β→α∧β))
 
-  ;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
+;; https://wikimedia.org/api/rest_v1/media/math/render/svg/87c96716eb4cd6dabc991b253d6d878790f81b6b
+(theorem
   ────────────── α,β
   ((α ∧ β) true)
   ────────────── ∧-rev
   ((β ∧ α) true)
-  (∧-intro
-    [α ≔ β β ≔ α]
-    (∧-elim-right α,β)
-    (∧-elim-left  α,β)))
+
+  α-inst (∧-elim-left  α,β)
+  β-inst (∧-elim-right α,β)
+  th (∧-intro [α ≔ β β ≔ α] β-inst α-inst))
