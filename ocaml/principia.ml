@@ -62,25 +62,6 @@ let genEnv curr xs =
     | _ -> raise (Other "Invalid substitution list.") in
   genEnvAux Env.empty xs
 
-(*let rec parseDeriv curr : sexp -> derivation = function
-  | List (Atom "sorry" :: xs) ->
-    Sorry (String.concat " " (List.map symbol xs))
-  | List (name :: Supp xs :: ys) ->
-    Proof { edge          = symbol name;
-            children      = List.map (parseDeriv curr) ys;
-            substitutions = genEnv curr xs }
-  | List (name :: xs) ->
-    Proof { edge          = symbol name;
-            children      = List.map (parseDeriv curr) xs;
-            substitutions = Env.empty }
-  | x when isPrimitive x -> Proof { edge          = symbol x;
-                                    children      = [];
-                                    substitutions = Env.empty }
-  | expr -> showSExp expr
-            |> Printf.sprintf "“%s” is not proof tree"
-            |> fun x -> Other x
-            |> raise*)
-
 let parseArgument : sexp -> argument = function
   | Atom x -> Lemma x
   | List [Atom "sorry"; Atom x] -> Sorry x
