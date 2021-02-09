@@ -101,13 +101,13 @@
   th (succ-twice [x ≔ succ]))
 
 (postulate
-  ─────────── bool-ctx-def
+  ───────────── bool-ctx-def
   (bool-ctx ctx)
 
-  ────────────────── false-def
+  ────────────────────────── false-def
   ((false : bool) ∈ bool-ctx)
 
-  ────────────────── true-def
+  ────────────────────────── true-def
   ((true : bool) ∈ bool-ctx)
 
    (Γ ctx) ((Γ ∪ bool-ctx) ⊢ b : bool)
