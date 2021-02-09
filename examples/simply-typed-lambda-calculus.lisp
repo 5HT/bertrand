@@ -87,3 +87,13 @@
   ────────────────────────────────────────────────────── fail
   (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
   th (succ-twice [x ≔ succ]))
+
+(postulate
+  ─────────── bool-ctx-def
+  (bool-ctx ctx)
+
+  ────────────────── false-def
+  ((false : bool) ∈ bool-ctx)
+
+  ────────────────── true-def
+  ((true : bool) ∈ bool-ctx))
