@@ -80,7 +80,7 @@
   ──────────────────────────────────────── λ-ctx-contains-succ
   ((ℕ-ctx (x : ℕ)) ⊢ succ : (ℕ → ℕ))
   succ∈ctx (cons-conservativity [Γ ≔ ℕ-ctx x ≔ succ y ≔ x σ ≔ (ℕ → ℕ) τ ≔ ℕ]
-                             ℕ-ctx-def succ-def)
+                                ℕ-ctx-def succ-def)
   th (ctx-intro [Γ ≔ (ℕ-ctx (x : ℕ)) x ≔ succ σ ≔ (ℕ → ℕ)]
                 λ-ctx-def succ∈ctx))
 
