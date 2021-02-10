@@ -4,7 +4,7 @@
   ;; types
   τ σ ρ
   ;; variables
-  x y z e e₁ e₂)
+  x y z b e e₁ e₂)
 
 (bound (λ (x : _) _))
 
