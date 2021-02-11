@@ -18,7 +18,8 @@
     <section>
       <h3>SYNOPSIS</h3>
       <p>
-        PRINCIPIA is a theorem prover for proving stuff like “1 + 1 = 2”<br>
+        <a href="https://github.com/groupoid/principia">PRINCIPIA</a>
+        is a theorem prover for proving stuff like “1 + 1 = 2”<br>
         Its (almost) only inference rule is substitution rule:
         from τ we can deduce τ[α′/α, β′/β, …] where “α′/α” is
         the substitution “α” by “α′”.<br>
@@ -26,23 +27,14 @@
         <a href="http://us.metamath.org/downloads/metamath.pdf">Metamath</a>
         and <a href="http://us.metamath.org/other.html#mmrelated">some Metamath-like systems</a>.
       </p>
-      <p>Requires Python 3.7+ and <a href="https://github.com/jd-boyd/sexpdata">sexpdata</a>.</p>
-      <figure style="max-width: 100%;">
-        <code>$ pip install sexpdata
-$ git clone https://github.com/groupoid/principia
-$ cd principia/python
-$ python principia.py ../examples/logic.lisp</code>
-      </figure>
-      <p>Alternatively you can use OCaml-version,
-        which requires OCaml 4.05+, ocamlbuild, ocamllex and Menhir.
-      </p>
+      <p>Requires  OCaml 4.05+, ocamlbuild, ocamllex and Menhir.</p>
       <figure style="max-width: 100%;">
         <code>$ git clone https://github.com/groupoid/principia
-$ cd principia/ocaml
+$ cd principia
 $ make
 ocamlbuild -use-menhir principia.native
 Finished, 29 targets (29 cached) in 00:00:03.
-$ ./principia.native ../examples/logic.lisp</code>
+$ ./principia.native examples/logic.lisp</code>
       </figure>
     </section>
     <section>
@@ -138,7 +130,7 @@ Term = Lit Name
       </p>
       <p>
         Bound variables (they appear in declaration) have special meaning.<br>
-        We cannot do two things with them:
+        We cannot do three things with them:
       </p>
       <ul style="list-style-type: circle;">
         <li>
@@ -149,10 +141,13 @@ Term = Lit Name
           from <code>(λ (x : ℕ) (succ (succ x)))</code>.
         </li>
         <li>
-          Replace the bound variable with another bound variable.
+          Replace the bound variable with a variable that is present in the term.
           This prevents from deducing wrong things like
           <code>(∀ b (∃ b (b > b)))</code> from
           <code>(∀ a (∃ b (a > b)))</code>.
+        </li>
+        <li>
+          Replace (bound or not) variable with a bound variable.
         </li>
       </ul>
       <h4>postulate</h4>
@@ -177,14 +172,10 @@ Term = Lit Name
         (2) is premises self.<br>
         (3) is lemma/theorem name.<br>
         (4) is conclusion.<br>
-        (5) is application of theorem/axiom g₁ in which
-            variable α₁ is replaced with term τ₁,
-            variable α₂ is replaced with term τ₂,
-            and so on. A resulting term is binded to variable c₁,
-            which can be used in the further applications.<br>
-        (6) is names of variables containing theorems/axioms without premises,
-            each of which must correspond one of g₁ premises.<br>
-        (7) is last application, which must correspond to the “h” (conclusion) term.
+        (5) is application of theorem/axiom g₁/g₂/gₙ in which
+            variable α₁/β₁/ε₁ is replaced with term τ₁/ρ₁/μ₁,
+            variable α₂/β₂/ε₂ is replaced with term τ₂/ρ₂/μ₂,
+            and so on.
         <figure><code>(theorem
 
   ─── f₁ ─── f₂ ─── f₃               ;; (1)
@@ -192,11 +183,10 @@ Term = Lit Name
   ──────────────────────── theorem-1 ;; (3)
               h                      ;; (4)
   
-  c₁ (g₁ [α₁ ≔ τ₁ α₂ ≔ τ₂ ...] ;; (5)
-         u₁ u₂ u₃ ...) ;; (6)
+  g₁ [α₁ ≔ τ₁ α₂ ≔ τ₂ ...]
+  g₂ [β₁ ≔ ρ₁ β₂ ≔ ρ₂ ...]
   ...
-  cₙ (gₙ [ε₁ ≔ μ₁ ε₂ ≔ μ₂ ...]
-         v₁ v₂ v₃ ...)) ;; (7)</code></figure>
+  gₙ [ε₁ ≔ μ₁ ε₂ ≔ μ₂ ...]) ;; (5)</code></figure>
       </p>
     </section>
   </article>
