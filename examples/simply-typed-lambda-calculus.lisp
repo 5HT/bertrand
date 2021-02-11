@@ -21,29 +21,29 @@
   ───────────────────────── ctx-∈
   ((x : σ) ∈ (Γ (x : σ)))
 
-    (Γ ctx) ((x : σ) ∈ Γ)
-  ───────────────────────── cons-conservativity
+   (Γ ctx) ((x : σ) ∈ Γ)
+  ──────────────────────── cons-conservativity
   ((x : σ) ∈ (Γ (y : τ)))
 
-    (Γ ctx) (Γ ⊢ τ)
-  ─────────────────── ⊢-conservativity
+   (Γ ctx) (Γ ⊢ τ)
+  ────────────────── ⊢-conservativity
   ((Γ (x : σ)) ⊢ τ)
   
-   (Γ ctx) (Δ ctx)
-  ───────────────── ∪-form
-    ((Γ ∪ Δ) ctx)
+  (Γ ctx) (Δ ctx)
+  ──────────────── ∪-form
+   ((Γ ∪ Δ) ctx)
 
-   (Γ ctx) (Δ ctx) (Γ ⊢ e : τ)
-  ───────────────────────────── ∪-intro₁
-        ((Γ ∪ Δ) ⊢ e : τ)
+  (Γ ctx) (Δ ctx) (Γ ⊢ e : τ)
+  ─────────────────────────── ∪-intro₁
+       ((Γ ∪ Δ) ⊢ e : τ)
 
-   (Γ ctx) (Δ ctx) (Δ ⊢ e : τ)
-  ───────────────────────────── ∪-intro₂
-        ((Γ ∪ Δ) ⊢ e : τ))
+  (Γ ctx) (Δ ctx) (Δ ⊢ e : τ)
+  ─────────────────────────── ∪-intro₂
+      ((Γ ∪ Δ) ⊢ e : τ))
 
 (postulate
   (Γ ctx) ((Γ (x : σ)) ⊢ e : τ)
-  ───────────────────────────────── λ-intro
+  ───────────────────────────── λ-intro
   (Γ ⊢ (λ (x : σ) e) : (σ → τ))
 
                (Γ ctx)
@@ -62,26 +62,26 @@
   ((succ : (ℕ → ℕ)) ∈ ℕ-ctx))
 
 (theorem
-  ─────────────────────── 1-def
+  ────────────────────── 1-def
   (ℕ-ctx ⊢ (succ 0) : ℕ)
   λ-elim ℕ-ctx-def
     ctx-intro ℕ-ctx-def succ-def
     ctx-intro ℕ-ctx-def 0-def)
 
 (theorem
-  ──────────────────────── λ-ctx-def
+  ───────────────────── λ-ctx-def
   ((ℕ-ctx (x : ℕ)) ctx)
   ctx-cons ℕ-ctx-def)
 
 (theorem
-  ──────────────────────────────────────── λ-ctx-contains-succ
+  ─────────────────────────────────── λ-ctx-contains-succ
   ((ℕ-ctx (x : ℕ)) ⊢ succ : (ℕ → ℕ))
   ctx-intro λ-ctx-def
     cons-conservativity
       ℕ-ctx-def succ-def)
 
 (theorem
-  ────────────────────────────────────────────────── succ-twice
+  ──────────────────────────────────────────────── succ-twice
   (ℕ-ctx ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
   λ-intro ℕ-ctx-def
     λ-elim λ-ctx-def λ-ctx-contains-succ
