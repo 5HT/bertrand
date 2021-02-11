@@ -149,6 +149,10 @@ let rec eval : sexp list -> unit = function
     st := { !st with defs = (term !st pattern, parseTerm !st body) :: !st.defs }
   | Atom "include" :: xs ->
     List.iter (symbol >> dofile) xs
+  | Atom "macroexpand" :: xs ->
+    List.iter (fun x ->
+      showTerm (parseTerm !st x)
+      |> Printf.printf "%s expands to %s\n" (showSExp x)) xs
   | Atom "postulate" :: expr ->
     let stack : (sexp list) ref = ref expr in
     let premises : (term list) ref = ref [] in
