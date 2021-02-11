@@ -62,43 +62,37 @@
   ((succ : (ℕ → ℕ)) ∈ ℕ-ctx))
 
 (theorem
-  ───────────────────────── 1-def
+  ─────────────────────── 1-def
   (ℕ-ctx ⊢ (succ 0) : ℕ)
-  succ-type (ctx-intro [Γ ≔ ℕ-ctx x ≔ succ σ ≔ (ℕ → ℕ)]
-                       ℕ-ctx-def succ-def)
-  lam-type (ctx-intro [Γ ≔ ℕ-ctx x ≔ 0 σ ≔ ℕ]
-                      ℕ-ctx-def 0-def)
-  th (λ-elim [Γ ≔ ℕ-ctx e₁ ≔ succ e₂ ≔ 0 σ ≔ ℕ τ ≔ ℕ]
-             ℕ-ctx-def succ-type lam-type))
+  λ-elim ℕ-ctx-def
+    ctx-intro ℕ-ctx-def succ-def
+    ctx-intro ℕ-ctx-def 0-def)
 
 (theorem
   ──────────────────────── λ-ctx-def
   ((ℕ-ctx (x : ℕ)) ctx)
-  th (ctx-cons [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def))
+  ctx-cons ℕ-ctx-def)
 
 (theorem
   ──────────────────────────────────────── λ-ctx-contains-succ
   ((ℕ-ctx (x : ℕ)) ⊢ succ : (ℕ → ℕ))
-  succ∈ctx (cons-conservativity [Γ ≔ ℕ-ctx x ≔ succ y ≔ x σ ≔ (ℕ → ℕ) τ ≔ ℕ]
-                                ℕ-ctx-def succ-def)
-  th (ctx-intro [Γ ≔ (ℕ-ctx (x : ℕ)) x ≔ succ σ ≔ (ℕ → ℕ)]
-                λ-ctx-def succ∈ctx))
+  ctx-intro λ-ctx-def
+    cons-conservativity
+      ℕ-ctx-def succ-def)
 
 (theorem
   ────────────────────────────────────────────────── succ-twice
   (ℕ-ctx ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
-  x∈ctx (ctx-∈ [Γ ≔ ℕ-ctx σ ≔ ℕ] ℕ-ctx-def)
-  x-type (ctx-intro [Γ ≔ (ℕ-ctx (x : ℕ)) σ ≔ ℕ] λ-ctx-def x∈ctx)
-  λ-app (λ-elim [Γ ≔ (ℕ-ctx (x : ℕ)) e₁ ≔ succ e₂ ≔ x σ ≔ ℕ τ ≔ ℕ]
-                λ-ctx-def λ-ctx-contains-succ x-type)
-  λ-app² (λ-elim [Γ ≔ (ℕ-ctx (x : ℕ)) e₁ ≔ succ e₂ ≔ (succ x) σ ≔ ℕ τ ≔ ℕ]
-                 λ-ctx-def λ-ctx-contains-succ λ-app)
-  th (λ-intro [Γ ≔ ℕ-ctx σ ≔ ℕ τ ≔ ℕ e ≔ (succ (succ x))] ℕ-ctx-def λ-app²))
+  λ-intro ℕ-ctx-def
+    λ-elim λ-ctx-def λ-ctx-contains-succ
+    λ-elim λ-ctx-def λ-ctx-contains-succ
+    ctx-intro λ-ctx-def
+      ctx-∈ ℕ-ctx-def)
 
 (theorem
   ────────────────────────────────────────────────────── fail
   (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
-  th (succ-twice [x ≔ succ]))
+  succ-twice)
 
 (postulate
   ───────────── bool-ctx-def

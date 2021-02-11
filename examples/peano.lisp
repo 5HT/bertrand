@@ -37,19 +37,19 @@
 (lemma
   ─────── 1-def
   (1 nat)
-  val (succ-def [x ≔ 0] 0-def))
+  succ-def 0-def)
 
 (lemma
   ─────── 2-def
   (2 nat)
-  val (succ-def [x ≔ 1] 1-def))
+  succ-def 1-def)
 
 (lemma
          ─────── p
          (x = y)
   ───────────────────── =-succ
   ((succ x) = (succ y))
-  val (=-prefix-ind [φ ≔ succ] p))
+  =-prefix-ind p)
 
 (postulate
      (x nat)
@@ -63,7 +63,6 @@
 (theorem
   ───────────── 1+1
   ((1 + 1) = 2)
-  lem-1 (+-succ [x ≔ 1 y ≔ 0] 1-def 0-def)
-  lem-2 (+-zero [x ≔ 1] 1-def)
-  lem-3 (=-succ [x ≔ (1 + 0) y ≔ 1] lem-2)
-  th    (=-trans [x ≔ (1 + 1) y ≔ (succ (1 + 0)) z ≔ 2] lem-1 lem-3))
+  =-trans
+    +-succ 1-def 0-def
+    =-succ +-zero 1-def)

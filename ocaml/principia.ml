@@ -38,7 +38,7 @@ let isSeparator : sexp -> bool = function
 let rec macroexpand curr tau =
   let mu =
     findMap (fun x -> let (pattern, body) = x in
-                      try let substs = matches Env.empty pattern tau in
+                      try let substs = matches Sub.empty pattern tau in
                           Some (multisubst substs body)
                       with MatchError _ -> None) curr.defs in
   let tau' = match mu with
@@ -52,69 +52,60 @@ let parseTerm curr expr =
   macroexpand curr (term curr expr)
 
 let separators = [":="; "≔"]
-let genEnv curr xs =
-  let rec genEnvAux env : sexp list -> env = function
+let genSub curr xs =
+  let rec genSubAux env : sexp list -> sub = function
     | x :: Atom sep :: value :: rest ->
       if List.mem sep separators then
-        genEnvAux (Env.add (symbol x) (parseTerm curr value) env) rest
+        genSubAux (Sub.add (symbol x, -1) (parseTerm curr value) env) rest
       else raise (Other "Invalid separator “:=”.")
     | [] -> env
     | _ -> raise (Other "Invalid substitution list.") in
-  genEnvAux Env.empty xs
+  genSubAux Sub.empty xs
 
-let parseArgument : sexp -> argument = function
-  | Atom x -> Lemma x
-  | List [Atom "sorry"; Atom x] -> Sorry x
-  | expr -> showSExp expr
-            |> Printf.sprintf "“%s” is not valid argument"
-            |> fun x -> Other x
-            |> raise
+let getSupp : sexp -> sexp list = function
+  | Supp xs -> xs
+  | expr    -> showSExp expr
+               |> Printf.sprintf "Expected list in square brackets at “%s”."
+               |> fail
 
-let parseProof curr : sexp -> proof = function
-  | List (Atom edge :: Supp substs :: args) ->
-    { edge = edge; arguments = List.map parseArgument args;
-      substitutions = genEnv curr substs }
-  | List (Atom edge :: args) ->
-    { edge = edge; arguments = List.map parseArgument args;
-      substitutions = Env.empty }
-  | expr -> showSExp expr
-            |> Printf.sprintf "“%s” is not valid proof"
-            |> fun x -> Other x
-            |> raise
-
-let parseProofs curr expr : (name * proof) list =
-  oddEvenMap symbol (parseProof curr) expr
-
-let pop (xs : ('a list) ref) : 'a =
-  match !xs with
-  | x :: xs' -> xs := xs'; x
-  | [] -> raise (Failure "pop")
+let rec parseProof curr : sexp list -> (string * sub) list = function
+  | Atom x :: Supp xs :: rest ->
+    (x, genSub curr xs) :: parseProof curr rest
+  | Atom x :: rest -> (x, Sub.empty) :: parseProof curr rest
+  | [] -> []
+  | xs -> showSExp (List xs)
+          |> Printf.sprintf "Invalid proof: “%s”."
+          |> fail
 
 let preamble curr (expr : (sexp list) ref) =
-  let finished : bool ref        = ref false in
-  let expected : int ref         = ref 0 in
-  let names    : (name list) ref = ref [] in
-  let premises : (term list) ref = ref [] in
-  let elem     : sexp ref        = ref (Atom "_") in
-  while not !finished do
-    elem := pop expr;
-    if isSeparator !elem then begin
-      names := symbol (pop expr) :: !names;
+  let finished : bool ref          = ref false in
+  let expected : int ref           = ref 0 in
+  let names    : (string list) ref = ref [] in
+  let premises : (term list) ref   = ref [] in
+
+  while List.length !expr > 0 && not !finished do
+    let elem = pop expr in
+    if isSeparator elem then begin
+      names    := symbol (pop expr) :: !names;
       expected := !expected + 1
     end
     else if !expected <> 0 then begin
-      premises := parseTerm curr !elem :: !premises;
+      premises := parseTerm curr elem :: !premises;
       expected := !expected - 1
     end
-    else finished := true
+    else begin
+      expr := elem :: !expr;
+      finished := true
+    end
   done;
   if List.length !names <> List.length !premises then
-    raise (Other "Invalid theorem definition")
+    raise (Other "Invalid theorem definition (number of premise names ≠ number of premises)")
   else ();
+
   let name = pop names in let conclusion = pop premises in
   (name, conclusion,
    List.rev !names, List.rev !premises,
-   parseProofs curr (!elem :: !expr))
+   parseProof curr !expr)
 
 let init : state =
   { variables = [];
@@ -128,8 +119,7 @@ let st : state ref = ref init
 let upTerm ctx name tau = Env.add name { premises = []; conclusion = tau } ctx
 
 let evalTheorem src =
-  let (name, conclusion, names, premises, proofs') = preamble !st (ref src) in
-  let (proofs, (_, proof)) = extractLast proofs' in
+  let (name, conclusion, names, premises, proof) = preamble !st (ref src) in
   let ctx = ref !st.context in
   List.iter2
     (fun name tau -> ctx := upTerm !ctx name tau)
@@ -138,8 +128,6 @@ let evalTheorem src =
     raise (AlreadyDefinedError name)
   else
     try
-      List.iter (fun p ->
-        ctx := upTerm !ctx (fst p) (snd p |> infer !ctx !st.bound)) proofs;
       check !ctx !st.bound conclusion proof;
       Printf.printf "“%s” checked\n" name;
       st := { !st with context =
@@ -151,8 +139,8 @@ let evalTheorem src =
       prettyPrintError ex
 
 let rec eval : sexp list -> unit = function
-  | [Atom "infix"; Atom op; Int prec] ->
-    st := { !st with infix = Env.add op prec !st.infix }
+  | [Atom "infix"; Atom op; Atom prec] ->
+    st := { !st with infix = Env.add op (int_of_string prec) !st.infix }
   | Atom "variables" :: xs ->
     st := { !st with variables = !st.variables @ List.map symbol xs }
   | Atom "bound" :: xs ->

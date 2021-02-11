@@ -12,13 +12,12 @@ let nonempty : 'a list -> bool = function
   | [] -> false
   | _  -> true
 
-let isPrimitive : sexp -> bool = function
-  | Atom _ | Int _ -> true
-  | _ -> false
+let isAtom : sexp -> bool = function
+  | Atom _ -> true
+  | _      -> false
 
 let symbol : sexp -> string = function
   | Atom s -> s
-  | Int x  -> string_of_int x
   | _      -> raise (Other "Expected atom")
 
 (* From: https://rosettacode.org/wiki/Parsing/Shunting-yard_algorithm#OCaml *)
@@ -34,9 +33,9 @@ let rec term curr expr =
   | List (Atom "#" :: xs) -> shuntingyard curr xs
   | List xs -> Symtree (List.map (term curr) xs)
   | Atom "_" -> Hole
-  | x when isPrimitive x ->
-    let name = symbol x in
-    if List.mem name curr.variables then Var name
+  | Atom name ->
+    if List.mem name curr.variables then
+      Var (name, -1)
     else Lit name
   | _ -> raise (InvalidTermError expr)
 and shuntingyard curr exprs =

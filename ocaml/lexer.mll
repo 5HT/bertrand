@@ -20,6 +20,5 @@ rule main = parse
 | ")"        { RPAR }
 | "["        { LSQR }
 | "]"        { RSQR }
-| utf8+ as s { try INT (int_of_string s)
-               with Failure _ -> IDENT s }
+| utf8+ as s { IDENT s }
 | eof        { EOF }

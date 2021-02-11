@@ -16,3 +16,8 @@ let rec extractLast : 'a list -> 'a list * 'a = function
   | []      -> raise (Failure "extractLast")
   | [x]     -> ([], x)
   | x :: xs -> let ys = extractLast xs in (x :: fst ys, snd ys)
+
+let pop (xs : ('a list) ref) : 'a =
+  match !xs with
+  | x :: xs' -> xs := xs'; x
+  | [] -> raise (Failure "pop")
