@@ -21,7 +21,7 @@ let prettyPrintError : exn -> unit = function
   | ApplicationMismatch (name, v1, v2) ->
     Printf.printf "%s expects %d arguments, but got %d\n" name v1 v2
   | InvalidTermError x ->
-    Printf.printf "Invalid term: %s" (showSExp x)
+    Printf.printf "Invalid term: %s\n" (showSExp x)
   | AlreadyDefinedError s ->
     Printf.printf "“%s” is already defined\n" s
   | ReplacingBoundWithConstant (name, omega) ->
