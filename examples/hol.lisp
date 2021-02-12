@@ -39,6 +39,14 @@
   ───────── ctx₂-Prop
   (Δ : Prop)
 
+  ((Γ , Δ) : Prop)
+  ──────────────── join₁-Prop
+     (Γ : Prop)
+
+  ((Γ , Δ) : Prop)
+  ──────────────── join₂-Prop
+     (Δ : Prop)
+
   ────────────────────── =-form
   (Id : (# α → α → Prop))
 
@@ -90,3 +98,36 @@
   ⊢-syll₂ [Δ ≔ Γ Τ ≔ Δ Θ ≔ Τ]
     ⊢-id ctx₁-Prop Δ-truth
     Δ-truth Τ-truth)
+
+(theorem
+  ───────────── Τ-truth  ───────────── Θ-truth
+  ((Γ , Δ) ⊢ Τ)          ((Γ , Τ) ⊢ Θ)
+  ──────────────────────────────────── syll-inf
+              ((Γ , Δ) ⊢ Θ)
+
+  ⊢-syll₂ [Γ ≔ (Γ , Δ) Δ ≔ Γ]
+    ⊢-simpl join₁-Prop ctx₁-Prop Τ-truth
+            join₂-Prop ctx₁-Prop Τ-truth
+    Τ-truth Θ-truth)
+
+(theorem
+   ───────────── hyp
+   (Γ ⊢ (Δ , Τ))
+   ───────────── join-left
+     (Γ ⊢ Δ)
+
+  ⊢-syll hyp
+    ⊢-simpl
+      join₁-Prop ctx₂-Prop hyp
+      join₂-Prop ctx₂-Prop hyp)
+
+(theorem
+   ───────────── hyp
+   (Γ ⊢ (Δ , Τ))
+   ───────────── join-right
+     (Γ ⊢ Τ)
+
+  ⊢-syll hyp
+    ⊢-simpr
+      join₁-Prop ctx₂-Prop hyp
+      join₂-Prop ctx₂-Prop hyp)

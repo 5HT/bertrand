@@ -11,6 +11,14 @@
 
 (define (¬¬ α) (¬ (¬ α)))
 
+(theorem
+  ─── h
+   α
+  ─── false
+   ⊥
+
+  h [α ≔ ⊥])
+
 (postulate
   α (α → β)
   ───────── mp

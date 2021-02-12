@@ -2,18 +2,25 @@ open Datatypes
 open Prelude
 open Errors
 
+let rec freeze = function
+  | Lit x      -> Lit x
+  | FVar x     -> FVar x
+  | Var x      -> FVar x
+  | Symtree xs -> Symtree (List.map freeze xs)
+  | Hole       -> Hole
+
 let rec subst name mu tau =
   match tau with
-  | Lit _      -> tau
   | Var name'  -> if name = name' then mu else tau
   | Symtree xs -> Symtree (List.map (subst name mu) xs)
-  | Hole       -> tau
+  | _          -> tau
 
 let rec index idx = function
-  | Lit x      -> Lit x
-  | Var (x, _) -> Var (x, idx)
-  | Symtree xs -> Symtree (List.map (index idx) xs)
-  | Hole       -> Hole
+  | Lit x       -> Lit x
+  | FVar (x, _) -> FVar (x, -1)
+  | Var (x, _)  -> Var (x, idx)
+  | Symtree xs  -> Symtree (List.map (index idx) xs)
+  | Hole        -> Hole
 
 let multisubst substs tau =
   let salt = gensym () in
@@ -45,6 +52,7 @@ let rec unify substs patt tau =
   let err = MatchError (patt, tau) in
   let omega = prune substs patt in
   match omega, tau with
+  | FVar a, FVar b when a = b -> substs
   | Var a, Var b when a = b -> substs
   | Var name, _ -> Sub.add name tau substs
   | _, Var name -> Sub.add name omega substs
@@ -106,20 +114,16 @@ let rec getBound (bound : term list) tau =
   | _          -> vars
 
 let rec hasVar (x : name) : term -> bool = function
-  | Hole       -> false
-  | Lit _      -> false
-  | Var y      -> x = y
-  | Symtree xs -> List.exists (hasVar x) xs
-
-let isVar : term -> bool = function
-  | Var _ -> true
-  | _     -> false
+  | Hole           -> false
+  | Lit _          -> false
+  | FVar y | Var y -> x = y
+  | Symtree xs     -> List.exists (hasVar x) xs
 
 let checkSubst (bound : term list) (substs : sub) tau =
   let bvars = ref (getBound bound tau) in
   Sub.iter (fun name omega ->
     match omega with
-    | Var name' when hasVar name tau ->
+    | FVar name' | Var name' when hasVar name tau ->
       (* Variable cannot be replaced with bound variable *)
       if List.mem name' !bvars then
         ReplacingWithBound (fst name, substs)

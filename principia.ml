@@ -70,7 +70,7 @@ let getSupp : sexp -> sexp list = function
 
 let rec parseProof curr : sexp list -> (string * sub) list = function
   | Atom x :: Supp xs :: rest ->
-    (x, genSub curr xs) :: parseProof curr rest
+    (x, genSub curr xs |> Sub.map freeze) :: parseProof curr rest
   | Atom x :: rest -> (x, Sub.empty) :: parseProof curr rest
   | [] -> []
   | xs -> showSExp (List xs)
@@ -116,19 +116,18 @@ let init : state =
 
 let st : state ref = ref init
 
-let upTerm ctx name tau = Env.add name { premises = []; conclusion = tau } ctx
+let upTerm ctx name tau =
+  Env.add name { premises = []; conclusion = tau } ctx
 
 let evalTheorem src =
   let (name, conclusion, names, premises, proof) = preamble !st (ref src) in
   let ctx = ref !st.context in
-  List.iter2
-    (fun name tau -> ctx := upTerm !ctx name tau)
-    names premises;
+  List.iter2 (fun name tau -> ctx := upTerm !ctx name (freeze tau)) names premises;
   if Env.mem name !st.context then
     raise (AlreadyDefinedError name)
   else
     try
-      check !ctx !st.bound conclusion proof;
+      check !ctx !st.bound (freeze conclusion) proof;
       Printf.printf "“%s” checked\n" name;
       st := { !st with context =
         Env.add name { premises   = premises;

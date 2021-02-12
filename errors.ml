@@ -46,7 +46,7 @@ let prettyPrintError : exn -> unit = function
     Printf.printf "Lexer error at %d:%d: %s\n" x y msg
   | Goals xs ->
     Printf.printf "There are open goals:\n";
-    List.iter (fun tau -> Printf.printf "⊢ %s\n" (showTerm tau)) xs
+    List.iter (fun tau -> Printf.printf "⊢ %s\n" (showTermIdx tau)) xs
   | Sys_error s -> print_endline s
   | ex -> Printf.printf "Uncaught exception: %s\n" (Printexc.to_string ex)
 
