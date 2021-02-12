@@ -17,8 +17,17 @@ jobs:
       - name: Build bytecode
         run: make byte
 
-      - name: Upload
+      - name: Build binary
+        run: make native
+
+      - name: Upload bytecode
         uses: actions/upload-artifact@v2
         with:
           name: Bytecode release
           path: _build/principia.byte
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: Ubuntu-20.04 binary release
+          path: _build/principia.native
