@@ -7,4 +7,7 @@ native:
 	ocamlbuild -use-menhir principia.native
 
 byte:
+	ocamlbuild -use-menhir principia.byte
+
+byte-debug:
 	ocamlbuild -use-menhir principia.byte -tag 'debug'

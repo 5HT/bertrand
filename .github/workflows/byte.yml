@@ -1,0 +1,24 @@
+name: Byte-code
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install OCaml and other packages
+        run: sudo apt-get install make ocaml ocamlbuild menhir
+
+      - name: Build byte-code
+        run: make byte
+
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Bytecode release
+          path: _build/principia.byte
