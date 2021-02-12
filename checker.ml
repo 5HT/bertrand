@@ -102,6 +102,7 @@ let rec getBound (bound : term list) tau =
       | Some substs ->
         List.map
           (function
+          | _, FVar name
           | _, Var name -> name
           | _, omega    -> raise (ExpectedVariable omega))
           (Sub.bindings substs)
