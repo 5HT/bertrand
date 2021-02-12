@@ -87,8 +87,6 @@ let lookup (ctx : rule Env.t) name =
   | Some v -> v
   | _      -> raise (NotDefinedError name)
 
-(* Compatibility with OCaml 4.05
-   From: https://github.com/ocaml/ocaml/blob/trunk/stdlib/list.ml *)
 let rec findMap f = function
   | [] -> None
   | x :: l ->
