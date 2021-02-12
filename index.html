@@ -67,6 +67,7 @@ $ ./principia.native examples/logic.lisp</code>
             <code>Name = &lt;Unicode character (except “(”, “)”, “[”, “]”, “"”, “'”) sequence&gt;
 Term = Lit Name
      | Var Name
+     | FVar Name
      | Hole
      | Symtree (Term list)</code></figure>
       </p>
@@ -77,6 +78,11 @@ Term = Lit Name
         <p>
           Symbol from variable list will be treated as variable: α, β, γ etc.<br>
           Variables (unlike literals) can be substituted.
+        </p>
+        <h4>FVar</h4>
+        <p>
+          <i>(Freezed)</i> variables given in hypothesis. Cannot be substituted.<br>
+          It prevents us from deducing “⊥” from hypothesis “α”.
         </p>
         <h4>Lit</h4>
         <p>
