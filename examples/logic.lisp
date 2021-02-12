@@ -1,6 +1,6 @@
 (infix → 25)
 
-(variables α β γ δ φ x a b c)
+(variables α β γ δ φ x y a b c)
 
 (bound (∀ x _))
 
