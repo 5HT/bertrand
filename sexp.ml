@@ -32,12 +32,12 @@ let rec term curr expr =
   match expr with
   | List (Atom "#" :: xs) -> shuntingyard curr xs
   | List xs -> Symtree (List.map (term curr) xs)
+  | Supp xs -> Symtree (Lit "@" :: List.map (term curr) xs)
   | Atom "_" -> Hole
   | Atom name ->
     if List.mem name curr.variables then
       Var (name, -1)
     else Lit name
-  | _ -> raise (InvalidTermError expr)
 and shuntingyard curr exprs =
   let prec x =
     match x with

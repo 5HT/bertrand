@@ -26,11 +26,12 @@ type term =
 | Hole
 
 let rec showTerm : term -> string = function
-  | Lit s       -> s
-  | FVar (s, _) -> s
-  | Var  (s, _) -> s
-  | Symtree xs  -> "(" ^ String.concat " " (List.map showTerm xs) ^ ")"
-  | Hole        -> "_"
+  | Lit s                   -> s
+  | FVar (s, _)             -> s
+  | Var  (s, _)             -> s
+  | Symtree (Lit "@" :: xs) -> "[" ^ String.concat " " (List.map showTerm xs) ^ "]"
+  | Symtree xs              -> "(" ^ String.concat " " (List.map showTerm xs) ^ ")"
+  | Hole                    -> "_"
 
 let rec showTermIdx : term -> string = function
   | Lit s         -> s

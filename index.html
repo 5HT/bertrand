@@ -59,18 +59,20 @@ $ ./principia.native examples/logic.lisp</code>
   <article>
     <section>
       <h3>TYPES</h3>
-      <p>Unlike <a href="http://us.metamath.org/downloads/metamath.pdf">Metamath</a>
-         and like <a href="https://www.quicklisp.org/beta/UNOFFICIAL/docs/bourbaki/doc/bourbaki-3.7.pdf">Bourbaki</a>
-         terms in PRINCIPIA are represented as S-expressions.<br>
-         They will be converted to an internal AST, which
-         is defined inductively as
-          <figure>
-            <code>Name = &lt;Unicode character (except “(”, “)”, “[”, “]”, “"”, “'”) sequence&gt;
+      <p>
+        Unlike <a href="http://us.metamath.org/downloads/metamath.pdf">Metamath</a>
+        and like <a href="https://www.quicklisp.org/beta/UNOFFICIAL/docs/bourbaki/doc/bourbaki-3.7.pdf">Bourbaki</a>
+        terms in PRINCIPIA are represented as S-expressions.<br>
+        They will be converted to an internal AST, which is defined inductively.<br>
+        <code>[τ₁ τ₂ ...]</code> in terms is converted to <code>(@ τ₁ τ₂ ...)</code>.
+        <figure>
+          <code>Name = &lt;Unicode character (except “(”, “)”, “[”, “]”, “"”, “'”) sequence&gt;
 Term = Lit Name
      | Var Name
      | FVar Name
      | Hole
-     | Symtree (Term list)</code></figure>
+     | Symtree (Term list)</code>
+        </figure>
       </p>
     </section>
     <aside>

@@ -76,7 +76,7 @@ let even fi tau =
   if fi <> tau then raise (UnificationError (fi, tau))
   else ()
 
-let lookup (ctx : rule Env.t) name =
+let lookup ctx name =
   match Env.find_opt name ctx with
   | Some v -> v
   | _      -> raise (NotDefinedError name)
@@ -89,7 +89,7 @@ let rec findMap f = function
       | None -> findMap f l
     end
 
-let rec getBound (bound : term list) tau =
+let rec getBound bound tau =
   let formula = findMap (fun x -> getMatch Sub.empty x tau) bound in
   let vars =
     begin match formula with
@@ -106,12 +106,12 @@ let rec getBound (bound : term list) tau =
   | Symtree xs -> vars @ List.concat (List.map (getBound bound) xs)
   | _          -> vars
 
-let rec hasVar (x : name) : term -> bool = function
+let rec hasVar x : term -> bool = function
   | FVar y | Var y -> x = y
   | Symtree xs     -> List.exists (hasVar x) xs
   | _              -> false
 
-let checkSubst (bound : term list) (substs : sub) tau =
+let checkSubst bound substs tau =
   let bvars = ref (getBound bound tau) in
   Sub.iter (fun name omega ->
     match omega with
