@@ -12,12 +12,12 @@
 (define (¬¬ α) (¬ (¬ α)))
 
 (theorem
-  ─── h
+  ─── hyp
    α
   ─── false
    ⊥
 
-  h [α ≔ ⊥])
+  hyp [α ≔ ⊥])
 
 (postulate
   α (α → β)
