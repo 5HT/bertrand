@@ -22,35 +22,37 @@ let rec index idx = function
   | Symtree xs  -> Symtree (List.map (index idx) xs)
   | Hole        -> Hole
 
+(* Performs simultaneous substituions *)
 let multisubst substs tau =
   let salt = gensym () in
      Sub.fold (fun (name, idx) _  -> subst (name, idx) (Var (name ^ salt, idx))) substs tau
   |> Sub.fold (fun (name, idx) mu -> subst (name ^ salt, idx) mu) substs
   |> Sub.fold (fun (name, idx) _  -> subst (name ^ salt, idx) (Var (name, idx))) substs
 
-let prune substs tau =
+let prune substs tau : term =
   match tau with
-  | Var name ->
-    if Sub.mem name substs then
-      Sub.find name substs
-    else tau
-  | _ -> tau
+  | Var name -> Option.value (Sub.find_opt name substs) ~default:tau
+  | _        -> tau
 
-let rec matches substs patt tau =
-  let err = MatchError (patt, tau) in
-  let omega = prune substs patt in
-  match omega, tau with
-  | Var name, _ -> Sub.add name tau substs
-  | Lit a, Lit b -> if a = b then substs else raise err
+let lift3 (f : 'a -> 'b -> 'c -> 'd) (x : 'a option) : 'b -> 'c -> 'd =
+  fun b c -> Option.bind x (fun a -> f a b c)
+
+let rec getMatch substs patt tau =
+  match prune substs patt, tau with
+  | Var name, _ -> Some (Sub.add name tau substs)
+  | Lit a, Lit b -> if a = b then Some substs else None
   | Symtree xs, Symtree ys ->
-    if List.length xs <> List.length ys then raise err
-    else List.fold_left2 matches substs xs ys
-  | Hole, _ -> substs
-  | _, _ -> raise err
+    if List.length xs <> List.length ys then None
+    else List.fold_left2 (lift3 getMatch) (Some substs) xs ys
+  | Hole, _ -> Some substs
+  | _, _ -> None
 
-let rec unify substs patt tau =
-  let err = MatchError (patt, tau) in
+let rec unify substs patt term =
+  let err = MatchError (patt, term) in
+
   let omega = prune substs patt in
+  let tau   = prune substs term in
+
   match omega, tau with
   | FVar a, FVar b when a = b -> substs
   | Var a, Var b when a = b -> substs
@@ -62,14 +64,6 @@ let rec unify substs patt tau =
     else List.fold_left2 unify substs xs ys
   | Hole, _ -> substs
   | _, _ -> raise err
-
-let itMatches substs patt tau =
-  try ignore (matches substs patt tau); true
-  with MatchError _ -> false
-
-let getMatch substs patt tau =
-  try Some (matches substs patt tau);
-  with MatchError _ -> None
 
 let rec occurs tau name =
   match tau with
@@ -113,10 +107,9 @@ let rec getBound (bound : term list) tau =
   | _          -> vars
 
 let rec hasVar (x : name) : term -> bool = function
-  | Hole           -> false
-  | Lit _          -> false
   | FVar y | Var y -> x = y
   | Symtree xs     -> List.exists (hasVar x) xs
+  | _              -> false
 
 let checkSubst (bound : term list) (substs : sub) tau =
   let bvars = ref (getBound bound tau) in
@@ -147,7 +140,7 @@ let substitute bound substs tau =
   checkSubst bound substs tau;
   multisubst substs tau
 
-let synth (ctx : rule Env.t) bound tau xs =
+let synth ctx bound tau xs =
   let goals : (term list) ref = ref [tau] in
   let rwr   : sub ref = ref Sub.empty in
 
@@ -170,7 +163,7 @@ let synth (ctx : rule Env.t) bound tau xs =
     raise (Goals !goals)
   else !rwr
 
-let check (ctx : rule Env.t) bound tau xs =
+let check ctx bound tau xs =
   let goals : (term list) ref = ref [tau] in
   let rwr = synth ctx bound tau xs in
 
