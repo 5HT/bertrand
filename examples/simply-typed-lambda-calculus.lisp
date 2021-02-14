@@ -22,12 +22,12 @@
   ────────── ctx-∈
   (μ ∈ (Γ μ))
 
-   (Γ ctx) (μ ∈ Γ)
-  ───────────────── cons-conservativity
-     (μ ∈ (Γ η))
+    (μ ∈ Γ)
+  ─────────── ctx-rec
+  (μ ∈ (Γ η))
 
    (Γ ctx) (Γ ⊢ τ)
-  ────────────────── ⊢-conservativity
+  ────────────────── ⊢-rec
   ((Γ (x : σ)) ⊢ τ)
   
   (Γ ctx) (Δ ctx)
@@ -78,8 +78,7 @@
   ─────────────────────────────────── λ-ctx-contains-succ
   ((ℕ-ctx (x : ℕ)) ⊢ succ : (ℕ → ℕ))
   ctx-intro λ-ctx-def
-    cons-conservativity
-      ℕ-ctx-def succ-def)
+    ctx-rec succ-def)
 
 (theorem
   ──────────────────────────────────────────────── succ-twice
