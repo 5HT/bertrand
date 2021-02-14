@@ -10,26 +10,32 @@
 (bound (λ (x : _) _))
 
 (postulate
-  (Γ ctx) ((x : σ) ∈ Γ)
-  ───────────────────── ctx-intro
-      (Γ ⊢ x : σ)
+  ((x : σ) ∈ Γ)
+  ───────────── ctx-intro
+   (Γ ⊢ x : σ)
 
-       (Γ ctx)
+  (Γ ⊢ x : σ)
+  ─────────── ctx-elim
+    (ctx Γ)
+
+      (Γ ctx)
   ──────────────── ctx-cons
   ((Γ (x : σ)) ctx)
 
-    (Γ ctx)
-  ────────── ctx-∈
+  ─────── ø-ctx
+  (ø ctx)
+
+  ─────────── ctx-∈
   (μ ∈ (Γ μ))
 
     (μ ∈ Γ)
   ─────────── ctx-rec
   (μ ∈ (Γ η))
 
-   (Γ ctx) (Γ ⊢ τ)
-  ────────────────── ⊢-rec
-  ((Γ (x : σ)) ⊢ τ)
-  
+      (Γ ⊢ e : τ)
+  ───────────────────── ⊢-rec
+  ((Γ (x : σ)) ⊢ e : τ)
+
   (Γ ctx) (Δ ctx)
   ──────────────── ∪-form
    ((Γ ∪ Δ) ctx)
@@ -43,55 +49,43 @@
       ((Γ ∪ Δ) ⊢ e : τ))
 
 (postulate
-  (Γ ctx) ((Γ (x : σ)) ⊢ e : τ)
+      ((Γ (x : σ)) ⊢ e : τ)
   ───────────────────────────── λ-intro
   (Γ ⊢ (λ (x : σ) e) : (σ → τ))
 
-               (Γ ctx)
   (Γ ⊢ e₁ : (σ → τ)) (Γ ⊢ e₂ : σ)
   ──────────────────────────────── λ-elim
           (Γ ⊢ (e₁ e₂) : τ))
 
 (postulate
-  ─────────── ℕ-ctx-def
-  (ℕ-ctx ctx)
+  ─────────── 0-def
+  (ø ⊢ 0 : ℕ)
 
-  ────────────────── 0-def
-  ((0 : ℕ) ∈ ℕ-ctx)
-
-  ─────────────────────────── succ-def
-  (# succ : (ℕ → ℕ) ∈ ℕ-ctx))
+  ──────────────────── succ-def
+  (ø ⊢ succ : (ℕ → ℕ)))
 
 (theorem
   ────────────────────── 1-def
-  (ℕ-ctx ⊢ (succ 0) : ℕ)
-  λ-elim ℕ-ctx-def
-    ctx-intro ℕ-ctx-def succ-def
-    ctx-intro ℕ-ctx-def 0-def)
+  (ø ⊢ (succ 0) : ℕ)
+  λ-elim succ-def 0-def)
 
 (theorem
-  ───────────────────── λ-ctx-def
-  ((ℕ-ctx (x : ℕ)) ctx)
-  ctx-cons ℕ-ctx-def)
-
-(theorem
-  ─────────────────────────────────── λ-ctx-contains-succ
-  ((ℕ-ctx (x : ℕ)) ⊢ succ : (ℕ → ℕ))
-  ctx-intro λ-ctx-def
-    ctx-rec succ-def)
+  ─────────────────────────────────── λ-ctx-succ
+  ((ø (x : ℕ)) ⊢ succ : (ℕ → ℕ))
+  ⊢-rec succ-def)
 
 (theorem
   ──────────────────────────────────────────────── succ-twice
-  (ℕ-ctx ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
-  λ-intro ℕ-ctx-def
-    λ-elim λ-ctx-def λ-ctx-contains-succ
-    λ-elim λ-ctx-def λ-ctx-contains-succ
-    ctx-intro λ-ctx-def
-      ctx-∈ ℕ-ctx-def)
+  (ø ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
+  λ-intro λ-elim
+    ⊢-rec succ-def
+    λ-elim
+      ⊢-rec succ-def
+      ctx-intro ctx-∈)
 
 (theorem
   ────────────────────────────────────────────────────── fail
-  (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
+  (ø ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
   succ-twice)
 
 (define (if b then e₁ else e₂) (((ite b) e₁) e₂))
@@ -100,11 +94,11 @@
   ───────────── bool-ctx-def
   (bool-ctx ctx)
 
-  ────────────────────────── false-def
-  (# false : bool ∈ bool-ctx)
+  ────────────────── false-def
+  (ø ⊢ false : bool)
 
-  ───────────────────────── true-def
-  (# true : bool ∈ bool-ctx)
+  ───────────────── true-def
+  (ø ⊢ true : bool)
 
-  ──────────────────────────────────────── ite-def
-  (# ite : (# bool → σ → σ → σ) ∈ bool-ctx))
+  ─────────────────────────────── ite-def
+  (ø ⊢ ite : (# bool → σ → σ → σ)))
