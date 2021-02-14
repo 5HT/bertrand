@@ -20,13 +20,6 @@ let parse filename =
 
 let sep = "─-"
 
-let extList : sexp -> sexp list = function
-  | List xs -> xs
-  | u       -> showSExp u
-               |> Printf.sprintf "Expected list at “%s”"
-               |> fun x -> Other x
-               |> raise
-
 (* This will probably be faster
    than converting string into char list
    and using List.for_all *)
@@ -34,6 +27,13 @@ let isSeparator : sexp -> bool = function
   | Atom s -> let res = ref true in
     String.iter (fun ch -> res := String.contains sep ch && !res) s; !res
   | _      -> false
+
+let extList : sexp -> sexp list = function
+  | List xs -> xs
+  | u       -> showSExp u
+               |> Printf.sprintf "Expected list at “%s”"
+               |> fun x -> Other x
+               |> raise
 
 let rec macroexpand curr tau =
   let mu =
@@ -57,7 +57,10 @@ let genSub curr xs =
     | x :: Atom sep :: value :: rest ->
       if List.mem sep separators then
         genSubAux (Sub.add (symbol x, -1) (parseTerm curr value) env) rest
-      else raise (Other "Invalid separator “:=”.")
+      else
+        Printf.sprintf "Substituion must have the form “α ≔ τ”: %s %s %s"
+          (showSExp x) sep (showSExp value)
+       |> fail
     | [] -> env
     | _ -> raise (Other "Invalid substitution list.") in
   genSubAux Sub.empty xs
@@ -115,25 +118,24 @@ let st : state ref = ref
     defs      = [] }
 
 let upTerm ctx name tau =
-  Env.add name { premises = []; conclusion = tau } ctx
+  Env.add name { premises = []; conclusion = freeze tau } ctx
+
+let upDecl st name decl =
+  if Env.mem name !st.context then
+    raise (AlreadyDefinedError name)
+  else st := { !st with context = Env.add name decl !st.context }
 
 let evalTheorem src =
   let (name, conclusion, names, premises, proof) = preamble !st (ref src) in
-  let ctx = ref !st.context in
-  List.iter2 (fun name tau -> ctx := upTerm !ctx name (freeze tau)) names premises;
-  if Env.mem name !st.context then
-    raise (AlreadyDefinedError name)
-  else
-    try
-      check !ctx !st.bound (freeze conclusion) proof;
-      Printf.printf "“%s” checked\n" name;
-      st := { !st with context =
-        Env.add name { premises   = premises;
-                       conclusion = conclusion }
-                !st.context }
-    with ex ->
-      Printf.printf "“%s” has not been checked\n" name;
-      prettyPrintError ex
+  let ctx = List.fold_left2 upTerm !st.context names premises in
+
+  try
+    check ctx !st.bound (freeze conclusion) proof;
+    upDecl st name { premises = premises; conclusion = conclusion };
+    Printf.printf "“%s” declared\n" name
+  with ex ->
+    Printf.printf "“%s” has not been declared\n" name;
+    prettyPrintError ex
 
 let rec elab : sexp list -> unit = function
   | [Atom "infix"; Atom op; Atom prec] ->
@@ -155,21 +157,13 @@ let rec elab : sexp list -> unit = function
     let premises : (term list) ref = ref [] in
     while nonempty !stack do
       let x = pop stack in
-      if isSeparator x then
+      if isSeparator x then begin
         let name       = symbol (pop stack) in
         let conclusion = parseTerm !st (pop stack) in
-        if Env.mem name !st.context then
-          raise (AlreadyDefinedError name)
-        else begin
-          st := { !st with context =
-                  Env.add name
-                    { premises   = !premises;
-                      conclusion = conclusion }
-                    !st.context };
-          Printf.printf "“%s” postulated\n" name;
-          premises := []
-        end
-      else premises := !premises @ [parseTerm !st x]
+        upDecl st name { premises = !premises; conclusion = conclusion };
+        Printf.printf "“%s” postulated\n" name;
+        premises := []
+      end else premises := !premises @ [parseTerm !st x]
     done;
     if nonempty !premises then
       raise (Other "Incomplete postulate.")
