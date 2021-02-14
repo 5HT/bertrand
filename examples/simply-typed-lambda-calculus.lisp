@@ -6,6 +6,7 @@
   ;; variables
   x y z b e e₁ e₂)
 
+(infix → 25) (infix ∈ 30) (infix : 50)
 (bound (λ (x : _) _))
 
 (postulate
@@ -94,17 +95,17 @@
   (ℕ-ctx ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
   succ-twice)
 
+(define (if b then e₁ else e₂) (((ite b) e₁) e₂))
+
 (postulate
   ───────────── bool-ctx-def
   (bool-ctx ctx)
 
   ────────────────────────── false-def
-  ((false : bool) ∈ bool-ctx)
+  (# false : bool ∈ bool-ctx)
 
-  ────────────────────────── true-def
-  ((true : bool) ∈ bool-ctx)
+  ───────────────────────── true-def
+  (# true : bool ∈ bool-ctx)
 
-   (Γ ctx) ((Γ ∪ bool-ctx) ⊢ b : bool)
-       (Γ ⊢ e₁ : σ) (Γ ⊢ e₂ : σ)
-  ───────────────────────────────────── ite-def
-  ((Γ ∪ bool-ctx) ⊢ (ite b e₁ e₂) : σ))
+  ──────────────────────────────────────── ite-def
+  (# ite : (# bool → σ → σ → σ) ∈ bool-ctx))
