@@ -21,3 +21,11 @@ let pop (xs : ('a list) ref) : 'a =
   match !xs with
   | x :: xs' -> xs := xs'; x
   | [] -> raise (Failure "pop")
+
+let rec findMap f = function
+  | [] -> None
+  | x :: l ->
+    begin match f x with
+      | Some _ as result -> result
+      | None -> findMap f l
+    end

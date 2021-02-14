@@ -20,7 +20,7 @@ let rec parseArgs : string list -> cmdline list = function
   | "check" :: filename :: rest -> Check filename :: parseArgs rest
   | "help"  :: rest -> Help :: parseArgs rest
   | x :: xs ->
-    Printf.printf "Unknown command “%s”\n" x;
+    Printf.printf "Unknown/incorrect command “%s”\n" x;
     parseArgs xs
 
 let defaults : cmdline list -> cmdline list = function

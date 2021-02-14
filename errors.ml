@@ -50,7 +50,7 @@ let prettyPrintError : exn -> unit = function
   | Sys_error s -> print_endline s
   | ex -> Printf.printf "Uncaught exception: %s\n" (Printexc.to_string ex)
 
-let handleErrors (f : 'a -> 'b) (default : 'b) (x : 'a) : 'b =
+let handle (f : 'a -> 'b) (default : 'b) (x : 'a) : 'b =
   try f x with ex -> prettyPrintError ex; default
 
 let fail x = raise (Other x)
