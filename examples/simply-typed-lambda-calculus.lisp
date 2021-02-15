@@ -10,8 +10,8 @@
 (bound (λ (x : _) _))
 
 (postulate
-  ─────── ø-ctx
-  (ø ctx)
+  ─────── ·-ctx
+  (· ctx)
 
       (Γ ctx)
   ──────────────── ctx-cons
@@ -60,24 +60,24 @@
 
 (postulate
   ─────────── 0-def
-  (ø ⊢ 0 : ℕ)
+  (· ⊢ 0 : ℕ)
 
   ──────────────────── succ-def
-  (ø ⊢ succ : (ℕ → ℕ)))
+  (· ⊢ succ : (ℕ → ℕ)))
 
 (theorem
   ────────────────── 1-def
-  (ø ⊢ (succ 0) : ℕ)
+  (· ⊢ (succ 0) : ℕ)
   λ-elim succ-def 0-def)
 
 (theorem
   ─────────────────────────────── λ-ctx-succ
-  ((ø (x : ℕ)) ⊢ succ : (ℕ → ℕ))
+  ((· (x : ℕ)) ⊢ succ : (ℕ → ℕ))
   ⊢-rec succ-def)
 
 (theorem
   ──────────────────────────────────────────── succ-twice
-  (ø ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
+  (· ⊢ (λ (x : ℕ) (succ (succ x))) : (ℕ → ℕ))
   λ-intro λ-elim
     ⊢-rec succ-def
     λ-elim
@@ -86,7 +86,7 @@
 
 (theorem
   ───────────────────────────────────────────────── fail
-  (ø ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
+  (· ⊢ (λ (succ : ℕ) (succ (succ succ))) : (ℕ → ℕ))
   succ-twice)
 
 (define (if b then e₁ else e₂) (((ite b) e₁) e₂))
@@ -96,10 +96,10 @@
   (bool-ctx ctx)
 
   ────────────────── false-def
-  (ø ⊢ false : bool)
+  (· ⊢ false : bool)
 
   ───────────────── true-def
-  (ø ⊢ true : bool)
+  (· ⊢ true : bool)
 
   ─────────────────────────────── ite-def
-  (ø ⊢ ite : (# bool → σ → σ → σ)))
+  (· ⊢ ite : (# bool → σ → σ → σ)))
