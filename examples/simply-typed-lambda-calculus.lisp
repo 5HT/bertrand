@@ -92,9 +92,6 @@
 (define (if b then e₁ else e₂) (((ite b) e₁) e₂))
 
 (postulate
-  ───────────── bool-ctx-def
-  (bool-ctx ctx)
-
   ────────────────── false-def
   (· ⊢ false : bool)
 
