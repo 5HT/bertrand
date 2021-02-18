@@ -152,9 +152,8 @@ let parse curr : sexp list -> command = function
   | Atom "lemma"   :: expr
   | Atom "theorem" :: expr ->
     let (name, conclusion, names, premises, proof) = preamble curr (ref expr) in
-    Decl { name = name; hypothesises = names;
-           rule = { premises = premises; conclusion = conclusion };
-           proof = proof }
+    Decl { name = name; hypothesises = names; proof = proof;
+           rule = { premises = premises; conclusion = conclusion } }
   | x :: xs ->
     Other (Printf.sprintf "Unknown/incorrect form “%s”" (showSExp x)) |> raise
   | []      -> Other "Empty S-Expression" |> raise
