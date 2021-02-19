@@ -34,13 +34,13 @@ let extList : sexp -> sexp list = function
                |> fun x -> Other x
                |> raise
 
-let rec macroexpand curr tau =
-  let mu =
-    findMap (fun (pattern, body) ->
-              Option.bind (getMatch Sub.empty pattern tau)
-                (fun substs -> Some (multisubst substs body))) curr.defs in
+let expand curr tau =
+  findMap (fun (pattern, body) ->
+            (fun substs -> Some (multisubst substs body))
+            |> Option.bind (getMatch Sub.empty pattern tau)) curr.defs
 
-  match Option.value mu ~default:tau with
+let rec macroexpand curr tau =
+  match Option.value (expand curr tau) ~default:tau with
   | Symtree xs -> Symtree (List.map (macroexpand curr) xs)
   | v          -> v
 

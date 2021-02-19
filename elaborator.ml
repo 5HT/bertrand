@@ -30,7 +30,15 @@ let rec elab : command -> unit = function
   | Bound xs ->
     st := { !st with bound = !st.bound @ xs }
   | Macro (pattern, body) ->
-    st := { !st with defs = (pattern, body) :: !st.defs }
+    let fv : sub ref = ref Sub.empty in
+    iterVars (fun name ->
+      if not (occurs name pattern || Sub.mem name !fv) then begin
+        (* New name contains space so it cannot be used by user *)
+        let sym = gensym () |> Printf.sprintf "«? %s»" in
+        fv := Sub.add name (Var (sym, snd name)) !fv
+      end) body;
+
+    st := { !st with defs = (pattern, multisubst !fv body) :: !st.defs }
   | Include xs -> List.iter dofile xs
   | Macroexpand xs ->
     List.iter (fun (x, y) ->

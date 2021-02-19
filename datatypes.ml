@@ -50,10 +50,15 @@ let rec freeze = function
   | Hole       -> Hole
 
 let rec subst name mu tau =
-    match tau with
-    | Var name'  -> if name = name' then mu else tau
-    | Symtree xs -> Symtree (List.map (subst name mu) xs)
-    | _          -> tau
+  match tau with
+  | Var name'  -> if name = name' then mu else tau
+  | Symtree xs -> Symtree (List.map (subst name mu) xs)
+  | _          -> tau
+
+let rec iterVars (f : name -> unit) = function
+  | Var x      -> f x
+  | Symtree xs -> List.iter (iterVars f) xs
+  | tau        -> ()
 
 module Variables = Set.Make(Name)
 

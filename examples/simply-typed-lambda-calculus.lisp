@@ -100,3 +100,6 @@
 
   ─────────────────────────────── ite-def
   (· ⊢ ite : (# bool → σ → σ → σ)))
+
+(define test (σ → σ → σ))
+(macroexpand test)
