@@ -55,6 +55,8 @@ let rec subst name mu tau =
     | Symtree xs -> Symtree (List.map (subst name mu) xs)
     | _          -> tau
 
+module Variables = Set.Make(Name)
+
 module Sub = Map.Make(Name)
 type sub = term Sub.t
 

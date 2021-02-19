@@ -46,16 +46,19 @@ let rec getBound bound tau =
   let vars =
     begin match formula with
       | Some substs ->
-        List.map
+        Sub.to_seq substs
+        |> Seq.map
           (function
-          | _, FVar name
-          | _, Var name -> name
-          | _, omega    -> raise (ExpectedVariable omega))
-          (Sub.bindings substs)
-      | None -> []
+            | _, FVar name
+            | _, Var name -> name
+            | _, omega    -> raise (ExpectedVariable omega))
+        |> Variables.of_seq
+      | None -> Variables.empty
     end in
   match tau with
-  | Symtree xs -> vars @ List.concat (List.map (getBound bound) xs)
+  | Symtree xs ->
+    List.map (getBound bound) xs
+    |> List.fold_left Variables.union vars
   | _          -> vars
 
 let checkSubst bound substs tau =
@@ -64,23 +67,26 @@ let checkSubst bound substs tau =
     match omega with
     | FVar name' | Var name' when occurs name tau ->
       (* Variable cannot be replaced with bound variable *)
-      if List.mem name' !bvars then
+      if Variables.mem name' !bvars then
         ReplacingWithBound (fst name, substs)
         |> raise
       else ();
 
-      (* Bound variable cannot be replaced with present in term variable *)
-      if List.mem name !bvars then
+      (* Bound variable cannot be replaced with variable present in term *)
+      if Variables.mem name !bvars then begin
         if occurs name' tau then
           ReplacingBoundWith (fst name, fst name')
           |> raise
-        else bvars := name' :: !bvars
-      else ()
+        (* If bound variable “x” will be replaced with variable “y”,
+           then “y” will be bound too *)
+        else bvars := Variables.add name' !bvars
+      end
     | _ ->
       (* Bound variable cannot be replaced with a constant *)
-      if List.mem name !bvars then
-        raise (ReplacingBoundWithConstant (fst name, omega))
-      else ())
+      if Variables.mem name !bvars then begin
+        ReplacingBoundWithConstant (fst name, omega)
+        |> raise
+      end)
     substs
 
 let substitute bound substs tau =
