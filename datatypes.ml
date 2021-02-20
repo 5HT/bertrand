@@ -61,8 +61,10 @@ let rec iterVars (f : name -> unit) = function
   | tau        -> ()
 
 module Variables = Set.Make(Name)
+module Names     = Set.Make(String)
 
 module Sub = Map.Make(Name)
+
 type sub = term Sub.t
 
 let showSub (substs : sub) =
@@ -104,7 +106,7 @@ type rule =
   conclusion : term }
 
 type state =
-{ variables : string list;
+{ variables : Names.t;
   infix     : int Env.t;
   context   : rule Env.t;
   bound     : term list;

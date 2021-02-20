@@ -6,7 +6,7 @@ open Checker
 open Datatypes
 
 let st : state ref = ref
-  { variables = [];
+  { variables = Names.empty;
     infix     = Env.empty;
     context   = Env.empty;
     bound     = [];
@@ -26,7 +26,9 @@ let rec elab : command -> unit = function
   | Infix (op, prec) ->
     st := { !st with infix = Env.add op prec !st.infix }
   | Variables xs ->
-    st := { !st with variables = !st.variables @ xs }
+    st := { !st with variables = Names.union !st.variables (Names.of_list xs) }
+  | Constants xs ->
+    st := { !st with variables = Names.diff  !st.variables (Names.of_list xs) }
   | Bound xs ->
     st := { !st with bound = !st.bound @ xs }
   | Macro (pattern, body) ->

@@ -109,6 +109,7 @@ let preamble curr (expr : (sexp list) ref) =
 type command =
   | Infix       of string * int
   | Variables   of string list
+  | Constants   of string list
   | Bound       of term list
   | Macro       of term * term
   | Include     of string list
@@ -122,6 +123,8 @@ let parse curr : sexp list -> command = function
     Infix (op, int_of_string prec)
   | Atom "variables" :: xs ->
     Variables (List.map symbol xs)
+  | Atom "constants" :: xs ->
+    Constants (List.map symbol xs)
   | Atom "bound" :: xs ->
     Bound (List.map (term curr) xs)
   | [Atom "define"; pattern; body] ->

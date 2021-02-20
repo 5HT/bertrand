@@ -35,7 +35,7 @@ let rec term curr expr =
   | Supp xs -> Symtree (Lit "@" :: List.map (term curr) xs)
   | Atom "_" -> Hole
   | Atom name ->
-    if List.mem name curr.variables then
+    if Names.mem name curr.variables then
       Var (name, -1)
     else Lit name
 and shuntingyard curr exprs =
