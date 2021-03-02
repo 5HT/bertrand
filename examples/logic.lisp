@@ -19,6 +19,16 @@
 
   hyp [α ≔ ⊥])
 
+(description
+  mp              (Modus ponens, or <i>implicaion elimination</i>)
+  VEQ             (This rule corresponds to the type
+                   of <code>const</code> function: $ λ x, λ y, x $)
+  CR              (Chain rule as proposition)
+  CR-rule         (Chain rule as deduction rule)
+  double-negation (Law of double negation)
+  bicond-prop-law (Material equivalence introduction)
+  lem             (Law of excluded middle))
+
 (postulate
   α (α → β)
   ───────── mp
@@ -83,6 +93,10 @@
     mp [α ≔ (# α → β → γ)
         β ≔ ((α → β) → (α → γ))]
       h CR)
+
+(description
+  no-upper-bound      (Example of axiom that uses bound variables)
+  variable-bound-fail (Example of invalid substitution))
 
 (postulate
   ─────────────────── no-upper-bound

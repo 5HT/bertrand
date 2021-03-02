@@ -5,6 +5,10 @@ type sexp =
 | List of sexp list
 | Supp of sexp list
 
+let expandSExp : sexp -> sexp list = function
+  | List xs | Supp xs -> xs
+  | x                 -> [x]
+
 let rec showSExp : sexp -> string = function
   | Atom s  -> s
   | List xs -> "(" ^ String.concat " " (List.map showSExp xs) ^ ")"
@@ -26,6 +30,10 @@ type term =
 | Var     of name
 | Symtree of term list
 | Hole
+
+let childs = function
+  | Symtree xs -> xs
+  | _          -> []
 
 let rec showTerm : term -> string = function
   | Lit s                   -> s
@@ -63,7 +71,8 @@ let rec iterVars (f : name -> unit) = function
 module Variables = Set.Make(Name)
 module Names     = Set.Make(String)
 
-module Sub = Map.Make(Name)
+module Sub  = Map.Make(Name)
+module SMap = Map.Make(String)
 
 type sub = term Sub.t
 

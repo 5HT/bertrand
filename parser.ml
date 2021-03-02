@@ -13,7 +13,6 @@ let parseErr f lexbuf =
 
 let getSExp filename =
   let chan = open_in filename in
-  Printf.printf "Parsing “%s”.\n" filename;
   let lexbuf = Lexing.from_channel chan in
   parseErr Reader.file lexbuf
 
@@ -117,12 +116,15 @@ type command =
   | Axiom       of (string * rule) list
   | Decl        of { name : string; hypothesises : string list;
                      rule : rule;   proof : (string * sub) list }
+  | Description of (string * string) list
 
 let parse curr : sexp list -> command = function
   | [Atom "infix"; Atom op; Atom prec] ->
     Infix (op, int_of_string prec)
   | Atom "variables" :: xs ->
     Variables (List.map symbol xs)
+  | Atom "description" :: xs ->
+    Description (oddEvenMap symbol (expandSExp >> List.map showSExp >> String.concat " ") xs)
   | Atom "constants" :: xs ->
     Constants (List.map symbol xs)
   | Atom "bound" :: xs ->

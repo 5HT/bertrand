@@ -41,10 +41,6 @@ let lookup ctx name =
   | Some v -> v
   | _      -> raise (NotDefinedError name)
 
-let childs = function
-  | Symtree xs -> xs
-  | _          -> []
-
 let rec getBound bound tau =
   let formula = findMap (fun x -> getMatch Sub.empty x tau) bound in
   let vars =
