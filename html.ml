@@ -90,8 +90,8 @@ let mathjax = "
 
 let descriptions : (string SMap.t) ref = ref SMap.empty
 
-let defaultDesc = "―"
-let getDesc name = Option.value (SMap.find_opt name !descriptions) ~default:defaultDesc
+let nodata = "―"
+let getDesc name = Option.value (SMap.find_opt name !descriptions) ~default:nodata
 
 let termTex : term -> string =
   let rec render : term -> string = function
@@ -131,11 +131,11 @@ let decl rule =
     ]
   ]
 
-let declHeader kind name =
+let declHeader kind name desc =
   tr [bgcolor "#eeeeee"] [
     td [] [text kind];
     td [] [text name];
-    td [] [text (getDesc name)]
+    td [] [text desc]
   ]
 
 let tags : command -> elem list = function
@@ -146,10 +146,20 @@ let tags : command -> elem list = function
     List.iter (fun (name, desc) ->
       descriptions := SMap.add name desc !descriptions) xs; []
   | Axiom xs ->
-    List.map (fun (name, rule) -> declHeader "Axiom" name :: decl rule) xs
+    List.map (fun (name, rule) ->
+      declHeader "Axiom" name (getDesc name) :: decl rule) xs
     |> List.concat
   | Decl { name; hypothesises; rule; proof } ->
-    declHeader "Theorem" name :: decl rule
+    declHeader "Theorem" name (getDesc name) :: decl rule
+  | Macro (pattern, body, desc) ->
+    declHeader "Definition" nodata
+      (Option.value desc ~default:nodata) ::
+    tr [] [
+      td [colspan 3; align "center"] [
+        termTex pattern ^ " ≔ " ^ termTex body
+        |> quoteTex |> text
+      ]
+    ] :: []
   | _ -> []
 
 let tableHeader =

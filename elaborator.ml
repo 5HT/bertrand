@@ -40,7 +40,7 @@ let rec elab : command -> unit = function
   | Constants xs -> constants xs
   | Bound xs ->
     st := { !st with bound = !st.bound @ xs }
-  | Macro (pattern, body) ->
+  | Macro (pattern, body, _) ->
     let fv : sub ref = ref Sub.empty in
     iterVars (fun name ->
       if not (occurs name pattern || Sub.mem name !fv) then begin

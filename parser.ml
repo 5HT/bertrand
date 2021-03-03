@@ -110,7 +110,7 @@ type command =
   | Variables   of string list
   | Constants   of string list
   | Bound       of term list
-  | Macro       of term * term
+  | Macro       of term * term * string option
   | Include     of string list
   | Macroexpand of (sexp * term) list
   | Axiom       of (string * rule) list
@@ -129,8 +129,12 @@ let parse curr : sexp list -> command = function
     Constants (List.map symbol xs)
   | Atom "bound" :: xs ->
     Bound (List.map (term curr) xs)
-  | [Atom "define"; pattern; body] ->
-    Macro (term curr pattern, parseTerm curr body)
+  | Atom "define" :: pattern :: body :: xs ->
+    let desc =
+      match xs with
+      | [] -> None
+      | _  -> Some (String.concat " " (List.map showSExp xs)) in
+    Macro (term curr pattern, parseTerm curr body, desc)
   | Atom "include" :: xs ->
     Include (List.map symbol xs)
   | Atom "macroexpand" :: xs ->

@@ -4,7 +4,8 @@
 
 (bound (∀ x _))
 
-(define (∃ x φ) (¬ (∀ x (¬ φ))))
+(define (∃ x φ) (¬ (∀ x (¬ φ)))
+  Existential quantifier)
 (define (α ∧ β) (¬ (α → (¬ β))))
 (define (α ∨ β) ((¬ α) → β))
 (define (α ↔ β) ((α → β) ∧ (β → α)))
