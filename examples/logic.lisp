@@ -6,11 +6,15 @@
 
 (define (∃ x φ) (¬ (∀ x (¬ φ)))
   Existential quantifier)
-(define (α ∧ β) (¬ (α → (¬ β))))
-(define (α ∨ β) ((¬ α) → β))
-(define (α ↔ β) ((α → β) ∧ (β → α)))
+(define (α ∧ β) (¬ (α → (¬ β)))
+  Logical AND)
+(define (α ∨ β) ((¬ α) → β)
+  Logical OR)
+(define (α ↔ β) ((α → β) ∧ (β → α))
+  Material equivalence)
 
-(define (¬¬ α) (¬ (¬ α)))
+(define (¬¬ α) (¬ (¬ α))
+  Double negation (shortcut to avoid necessary brackets))
 
 (theorem
   ─── hyp
