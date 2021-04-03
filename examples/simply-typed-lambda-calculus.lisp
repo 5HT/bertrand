@@ -100,3 +100,33 @@
 
   ─────────────────────────────── ite-def
   (· ⊢ ite : (# bool → σ → σ → σ)))
+
+(bound (Fv x _))
+
+(postulate
+       (Fv x e)
+  ─────────────────── Fv-λ
+  (Fv x (λ (y : σ) e))
+
+  (Fv x e₁) (Fv x e₂)
+  ─────────────────── F-ap
+    (Fv x (e₁ e₂))
+
+  ──────── Fv-refl
+  (Fv x x)
+
+  ;; boilerplate for constants
+  ──────── Fv-0
+  (Fv x 0)
+
+  ─────────── Fv-succ
+  (Fv x succ)
+  
+  ─────────── Fv-false
+  (Fv x false)
+
+  ─────────── Fv-true
+  (Fv x true)
+
+  ───────── Fv-ite
+  (Fv x ite))
