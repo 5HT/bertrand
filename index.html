@@ -18,7 +18,7 @@
     <section>
       <h3>SYNOPSIS</h3>
       <p>
-        <a href="https://github.com/groupoid/principia">PRINCIPIA</a>
+        <a href="https://github.com/groupoid/bertrand">BERTRAND/a>
         is a theorem prover for proving stuff like “1 + 1 = 2”<br>
         Its (almost) only inference rule is substitution rule:
         from τ we can deduce τ[α′/α, β′/β, …] where “α′/α” is
@@ -29,14 +29,14 @@
       </p>
       <p>Requires OCaml 4.08.1+, ocamlbuild, ocamllex and Menhir.</p>
       <figure style="max-width: 100%;">
-        <code>$ git clone https://github.com/groupoid/principia
-$ cd principia
+        <code>$ git clone https://github.com/groupoid/bertrand
+$ cd bertrand
 $ make
-ocamlbuild -use-menhir principia.native
+ocamlbuild -use-menhir bertrand.native
 Finished, 29 targets (29 cached) in 00:00:03.
-$ ./principia.native check examples/logic.lisp</code>
+$ ./bertrand.native check examples/logic.lisp</code>
       </figure>
-      <p>Binaries can be found on <a href="https://github.com/groupoid/principia/actions">GitHub actions</a> (in “artifacts”).</p>
+      <p>Binaries can be found on <a href="https://github.com/groupoid/bertrand/actions">GitHub actions</a> (in “artifacts”).</p>
     </section>
     <section>
       <h3>EXAMPLE</h3>
